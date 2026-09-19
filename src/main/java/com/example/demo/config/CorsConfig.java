@@ -35,7 +35,10 @@ public class CorsConfig implements WebMvcConfigurer {
                         "https://stanveeshop.com",
                         "https://www.stanveeshop.com",
                         "https://paypandastore.com",
-                        "https://www.paypandastore.com"
+                        "https://www.paypandastore.com",
+                        "https://www.stanveerento.com",
+                        "https://stanveerento.com"
+                        
                  )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
