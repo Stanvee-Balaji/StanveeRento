@@ -68,7 +68,7 @@ public class AdminCategoryController {
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryDto.CategoryResponse>> create(
             @Valid @RequestBody CategoryDto.CreateCategoryRequest request,
-            HttpServletRequest http) {
+            HttpServletRequest http) {	
 
         AdminEntity admin = authorize(http, CategoryPermissionCodes.CATEGORY_CREATE);
         return ResponseEntity.status(HttpStatus.CREATED).body(
