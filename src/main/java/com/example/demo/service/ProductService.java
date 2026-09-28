@@ -204,12 +204,21 @@ public class ProductService {
 
         ProductEntity product = findProduct(id);
         Map<String, Object> before = productState(product);
-
         product.setActive(false);
         product.setVisible(false);
         product.setDeletedAt(LocalDateTime.now());
         product.setUpdatedBy(actorId);
         productRepository.save(product);
+
+        // Free up SKUs so they can be reused by new products.
+        String suffix = "~DEL~" + product.getId().toString().substring(0, 8);
+        for (InventoryEntity inv : inventoryRepository.findByProduct_Id(product.getId())) {
+            if (inv.getSku() != null && !inv.getSku().contains("~DEL~")) {
+                inv.setSku(inv.getSku() + suffix);
+            }
+            inv.setActive(false);
+            inventoryRepository.save(inv);
+        }
 
         writeAudit(actorId, actorName, actorRole, "DELETE", product.getName(), before,
                 Map.of("active", false, "visible", false, "deleted", true), ip);
@@ -242,7 +251,8 @@ public class ProductService {
                 throw new SuperAdminService.BadRequestException("Duplicate sku in request: " + sku);
             }
             inventoryRepository.findBySkuIgnoreCase(sku)
-                    .filter(existing -> !existing.getProduct().getId().equals(product.getId()))
+            .filter(existing -> !existing.getProduct().getId().equals(product.getId()))
+            .filter(existing -> existing.getProduct().getDeletedAt() == null)
                     .ifPresent(existing -> {
                         throw new SuperAdminService.BadRequestException("SKU already in use: " + sku);
                     });

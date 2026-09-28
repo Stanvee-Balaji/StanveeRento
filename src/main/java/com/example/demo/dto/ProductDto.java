@@ -1,4 +1,5 @@
 package com.example.demo.dto;
+import jakarta.validation.constraints.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -8,6 +9,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 public final class ProductDto {
 
@@ -97,6 +100,7 @@ public final class ProductDto {
         public BigDecimal getOfferPrice() { return offerPrice; }
         public void setOfferPrice(BigDecimal v) { offerPrice = v; }
         public boolean isVisible() { return isVisible; }
+        @JsonAlias({"isVisible"})
         public void setVisible(boolean v) { isVisible = v; }
         public List<ImageItem> getImages() { return images; }
         public void setImages(List<ImageItem> v) { images = v; }
@@ -117,7 +121,7 @@ public final class ProductDto {
         private BigDecimal weekendPrice;
         private BigDecimal securityDeposit;
         private BigDecimal offerPrice;
-        private boolean isVisible;
+        private boolean isVisible = true;
 
         public UUID getCategoryId() { return categoryId; }
         public void setCategoryId(UUID v) { categoryId = v; }
@@ -138,6 +142,7 @@ public final class ProductDto {
         public BigDecimal getOfferPrice() { return offerPrice; }
         public void setOfferPrice(BigDecimal v) { offerPrice = v; }
         public boolean isVisible() { return isVisible; }
+        @JsonAlias({"isVisible"})
         public void setVisible(boolean v) { isVisible = v; }
     }
 
