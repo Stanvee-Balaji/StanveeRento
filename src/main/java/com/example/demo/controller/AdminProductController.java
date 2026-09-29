@@ -157,4 +157,58 @@ public class AdminProductController {
                 bulkUploadService.importFile(file, admin.getId(), admin.getFullName(),
                         admin.getRole().getRoleName(), util.getClientIp(http)), 200));
     }
+    
+    // ═══════════ FEATURED ═══════════
+
+    @PatchMapping("/{id}/featured")
+    public ResponseEntity<ApiResponse<ProductDto.ProductListItemResponse>> setFeatured(
+            @PathVariable UUID id, @Valid @RequestBody ProductDto.FeaturedRequest request, HttpServletRequest http) {
+        AdminEntity admin = authorize(http, ProductPermissionCodes.PRODUCT_EDIT);
+        return ResponseEntity.ok(ApiResponse.success("Featured updated",
+                productService.setFeatured(id, request, admin.getId(), admin.getFullName(),
+                        admin.getRole().getRoleName(), util.getClientIp(http)), 200));
+    }
+
+    @GetMapping("/featured")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> featuredList(HttpServletRequest http) {
+        authorize(http, ProductPermissionCodes.PRODUCT_VIEW);
+        return ResponseEntity.ok(ApiResponse.success("Featured products fetched", productService.adminFeatured(), 200));
+    }
+
+    @PutMapping("/featured/reorder")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> featuredReorder(
+            @Valid @RequestBody ProductDto.ReorderRequest request, HttpServletRequest http) {
+        AdminEntity admin = authorize(http, ProductPermissionCodes.PRODUCT_EDIT);
+        return ResponseEntity.ok(ApiResponse.success("Featured reordered",
+                productService.reorderFeatured(request, admin.getId(), admin.getFullName(),
+                        admin.getRole().getRoleName(), util.getClientIp(http)), 200));
+    }
+
+    // ═══════════ NEW ARRIVAL ═══════════
+
+    @PatchMapping("/{id}/new-arrival")
+    public ResponseEntity<ApiResponse<ProductDto.ProductListItemResponse>> setNewArrival(
+            @PathVariable UUID id, @Valid @RequestBody ProductDto.NewArrivalRequest request, HttpServletRequest http) {
+        AdminEntity admin = authorize(http, ProductPermissionCodes.PRODUCT_EDIT);
+        return ResponseEntity.ok(ApiResponse.success("New arrival updated",
+                productService.setNewArrival(id, request, admin.getId(), admin.getFullName(),
+                        admin.getRole().getRoleName(), util.getClientIp(http)), 200));
+    }
+
+    @GetMapping("/new-arrivals")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> newArrivalList(HttpServletRequest http) {
+        authorize(http, ProductPermissionCodes.PRODUCT_VIEW);
+        return ResponseEntity.ok(ApiResponse.success("New arrival products fetched", productService.adminNewArrivals(), 200));
+    }
+
+    @PutMapping("/new-arrivals/reorder")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> newArrivalReorder(
+            @Valid @RequestBody ProductDto.ReorderRequest request, HttpServletRequest http) {
+        AdminEntity admin = authorize(http, ProductPermissionCodes.PRODUCT_EDIT);
+        return ResponseEntity.ok(ApiResponse.success("New arrivals reordered",
+                productService.reorderNewArrivals(request, admin.getId(), admin.getFullName(),
+                        admin.getRole().getRoleName(), util.getClientIp(http)), 200));
+    }
+    
+    
 }

@@ -139,4 +139,57 @@ public class SuperAdminProductController {
         return ResponseEntity.ok(ApiResponse.success("Bulk import completed",
                 bulkUploadService.importFile(file, actorId, actorName(actorId), "SUPER_ADMIN", util.getClientIp(http)), 200));
     }
+    
+    
+    
+    
+    
+    
+    // ═══════════ FEATURED ═══════════
+
+    @PatchMapping("/{id}/featured")
+    public ResponseEntity<ApiResponse<ProductDto.ProductListItemResponse>> setFeatured(
+            @PathVariable UUID id, @Valid @RequestBody ProductDto.FeaturedRequest request, HttpServletRequest http) {
+        UUID actorId = util.getAuthenticatedSuperAdminId(http);
+        return ResponseEntity.ok(ApiResponse.success("Featured updated",
+                productService.setFeatured(id, request, actorId, actorName(actorId), "SUPER_ADMIN", util.getClientIp(http)), 200));
+    }
+
+    @GetMapping("/featured")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> featuredList(HttpServletRequest http) {
+        util.getAuthenticatedSuperAdminId(http);
+        return ResponseEntity.ok(ApiResponse.success("Featured products fetched", productService.adminFeatured(), 200));
+    }
+
+    @PutMapping("/featured/reorder")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> featuredReorder(
+            @Valid @RequestBody ProductDto.ReorderRequest request, HttpServletRequest http) {
+        UUID actorId = util.getAuthenticatedSuperAdminId(http);
+        return ResponseEntity.ok(ApiResponse.success("Featured reordered",
+                productService.reorderFeatured(request, actorId, actorName(actorId), "SUPER_ADMIN", util.getClientIp(http)), 200));
+    }
+
+    // ═══════════ NEW ARRIVAL ═══════════
+
+    @PatchMapping("/{id}/new-arrival")
+    public ResponseEntity<ApiResponse<ProductDto.ProductListItemResponse>> setNewArrival(
+            @PathVariable UUID id, @Valid @RequestBody ProductDto.NewArrivalRequest request, HttpServletRequest http) {
+        UUID actorId = util.getAuthenticatedSuperAdminId(http);
+        return ResponseEntity.ok(ApiResponse.success("New arrival updated",
+                productService.setNewArrival(id, request, actorId, actorName(actorId), "SUPER_ADMIN", util.getClientIp(http)), 200));
+    }
+
+    @GetMapping("/new-arrivals")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> newArrivalList(HttpServletRequest http) {
+        util.getAuthenticatedSuperAdminId(http);
+        return ResponseEntity.ok(ApiResponse.success("New arrival products fetched", productService.adminNewArrivals(), 200));
+    }
+
+    @PutMapping("/new-arrivals/reorder")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> newArrivalReorder(
+            @Valid @RequestBody ProductDto.ReorderRequest request, HttpServletRequest http) {
+        UUID actorId = util.getAuthenticatedSuperAdminId(http);
+        return ResponseEntity.ok(ApiResponse.success("New arrivals reordered",
+                productService.reorderNewArrivals(request, actorId, actorName(actorId), "SUPER_ADMIN", util.getClientIp(http)), 200));
+    }
 }

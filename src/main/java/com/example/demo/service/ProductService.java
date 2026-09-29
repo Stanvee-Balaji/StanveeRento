@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -206,6 +207,10 @@ public class ProductService {
         Map<String, Object> before = productState(product);
         product.setActive(false);
         product.setVisible(false);
+        product.setFeatured(false);
+        product.setFeaturedPriority(null);
+        product.setNewArrival(false);
+        product.setNewArrivalPriority(null);
         product.setDeletedAt(LocalDateTime.now());
         product.setUpdatedBy(actorId);
         productRepository.save(product);
@@ -360,8 +365,212 @@ public class ProductService {
         r.setOfferPrice(product.getOfferPrice());
         r.setActive(product.isActive());
         r.setVisible(product.isVisible());
+        r.setFeatured(product.isFeatured());
+        r.setFeaturedPriority(product.getFeaturedPriority());
+        r.setNewArrival(product.isNewArrival());
+        r.setNewArrivalPriority(product.getNewArrivalPriority());
         imageRepository.findByProduct_Id(product.getId()).stream().findFirst()
                 .ifPresent(img -> r.setCoverImageUrl(img.getImageUrl()));
         return r;
+    }
+    
+    
+    // ═══════════════════════════════════════════
+    //  FEATURED
+    // ═══════════════════════════════════════════
+
+    /** Add/remove a product from Featured. priority optional (auto = last). */
+    @Transactional
+    public ProductDto.ProductListItemResponse setFeatured(
+            UUID id, ProductDto.FeaturedRequest request,
+            UUID actorId, String actorName, String actorRole, String ip) {
+
+        ProductEntity product = findProduct(id);
+        Map<String, Object> before = featuredState(product);
+
+        product.setFeatured(request.getFeatured());
+        if (!request.getFeatured()) {
+            product.setFeaturedPriority(null);
+        } else if (request.getPriority() != null) {
+            product.setFeaturedPriority(request.getPriority());
+        } else if (product.getFeaturedPriority() == null) {
+            product.setFeaturedPriority(nextPriority(true, ProductEntity::getFeaturedPriority));
+        }
+        product.setUpdatedBy(actorId);
+        product = productRepository.save(product);
+
+        writeAudit(actorId, actorName, actorRole, "FEATURED_UPDATE", product.getName(),
+                before, featuredState(product), ip);
+        return toListItem(product);
+    }
+
+    /** Save a new order for Featured products (all-or-nothing). */
+    @Transactional
+    public List<ProductDto.ProductListItemResponse> reorderFeatured(
+            ProductDto.ReorderRequest request,
+            UUID actorId, String actorName, String actorRole, String ip) {
+
+        List<ProductDto.ProductListItemResponse> out = new ArrayList<>();
+        Set<UUID> seen = new HashSet<>();
+        for (ProductDto.ReorderItem item : request.getItems()) {
+            if (!seen.add(item.getProductId())) {
+                throw new SuperAdminService.BadRequestException("Duplicate productId: " + item.getProductId());
+            }
+            ProductEntity product = findProduct(item.getProductId());
+            if (!product.isFeatured()) {
+                throw new SuperAdminService.BadRequestException("Product is not featured: " + product.getName());
+            }
+            product.setFeaturedPriority(item.getPriority());
+            product.setUpdatedBy(actorId);
+            out.add(toListItem(productRepository.save(product)));
+        }
+        writeAudit(actorId, actorName, actorRole, "FEATURED_REORDER", "FEATURED",
+                null, Map.of("count", out.size()), ip);
+        return out;
+    }
+
+    // ═══════════════════════════════════════════
+    //  NEW ARRIVAL
+    // ═══════════════════════════════════════════
+
+    /** Add/remove a product from New Arrivals. priority optional (auto = last). */
+    @Transactional
+    public ProductDto.ProductListItemResponse setNewArrival(
+            UUID id, ProductDto.NewArrivalRequest request,
+            UUID actorId, String actorName, String actorRole, String ip) {
+
+        ProductEntity product = findProduct(id);
+        Map<String, Object> before = newArrivalState(product);
+
+        product.setNewArrival(request.getNewArrival());
+        if (!request.getNewArrival()) {
+            product.setNewArrivalPriority(null);
+        } else if (request.getPriority() != null) {
+            product.setNewArrivalPriority(request.getPriority());
+        } else if (product.getNewArrivalPriority() == null) {
+            product.setNewArrivalPriority(nextPriority(false, ProductEntity::getNewArrivalPriority));
+        }
+        product.setUpdatedBy(actorId);
+        product = productRepository.save(product);
+
+        writeAudit(actorId, actorName, actorRole, "NEW_ARRIVAL_UPDATE", product.getName(),
+                before, newArrivalState(product), ip);
+        return toListItem(product);
+    }
+
+    /** Save a new order for New Arrival products (all-or-nothing). */
+    @Transactional
+    public List<ProductDto.ProductListItemResponse> reorderNewArrivals(
+            ProductDto.ReorderRequest request,
+            UUID actorId, String actorName, String actorRole, String ip) {
+
+        List<ProductDto.ProductListItemResponse> out = new ArrayList<>();
+        Set<UUID> seen = new HashSet<>();
+        for (ProductDto.ReorderItem item : request.getItems()) {
+            if (!seen.add(item.getProductId())) {
+                throw new SuperAdminService.BadRequestException("Duplicate productId: " + item.getProductId());
+            }
+            ProductEntity product = findProduct(item.getProductId());
+            if (!product.isNewArrival()) {
+                throw new SuperAdminService.BadRequestException("Product is not a new arrival: " + product.getName());
+            }
+            product.setNewArrivalPriority(item.getPriority());
+            product.setUpdatedBy(actorId);
+            out.add(toListItem(productRepository.save(product)));
+        }
+        writeAudit(actorId, actorName, actorRole, "NEW_ARRIVAL_REORDER", "NEW_ARRIVAL",
+                null, Map.of("count", out.size()), ip);
+        return out;
+    }
+
+    // ═══════════════════════════════════════════
+    //  ADMIN LISTS (include inactive/hidden)
+    // ═══════════════════════════════════════════
+
+    @Transactional(readOnly = true)
+    public List<ProductDto.ProductListItemResponse> adminFeatured() {
+        return sortByPriority(sectionProducts(false, true), ProductEntity::getFeaturedPriority)
+                .stream().map(this::toListItem).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto.ProductListItemResponse> adminNewArrivals() {
+        return sortByPriority(sectionProducts(false, false), ProductEntity::getNewArrivalPriority)
+                .stream().map(this::toListItem).toList();
+    }
+
+    // ═══════════════════════════════════════════
+    //  PUBLIC (website) — only active + visible + not deleted
+    // ═══════════════════════════════════════════
+
+    @Transactional(readOnly = true)
+    public List<ProductDto.ProductListItemResponse> publicFeatured(Integer limit) {
+        return applyLimit(sortByPriority(sectionProducts(true, true), ProductEntity::getFeaturedPriority), limit)
+                .stream().map(this::toListItem).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductDto.ProductListItemResponse> publicNewArrivals(Integer limit) {
+        return applyLimit(sortByPriority(sectionProducts(true, false), ProductEntity::getNewArrivalPriority), limit)
+                .stream().map(this::toListItem).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ProductDto.HomeSectionsResponse homeSections(Integer limit) {
+        ProductDto.HomeSectionsResponse r = new ProductDto.HomeSectionsResponse();
+        r.setFeatured(publicFeatured(limit));
+        r.setNewArrivals(publicNewArrivals(limit));
+        return r;
+    }
+
+    // ── helpers for Featured / New Arrival ──
+
+    /** featuredSection=true -> products with featured flag; false -> newArrival flag. */
+    private List<ProductEntity> sectionProducts(boolean liveOnly, boolean featuredSection) {
+        Specification<ProductEntity> spec = (root, query, cb) -> {
+            List<jakarta.persistence.criteria.Predicate> p = new ArrayList<>();
+            p.add(cb.isNull(root.get("deletedAt")));
+            if (liveOnly) {
+                p.add(cb.isTrue(root.get("active")));
+                p.add(cb.isTrue(root.get("visible")));
+            }
+            p.add(cb.isTrue(root.get(featuredSection ? "featured" : "newArrival")));
+            return cb.and(p.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+        return productRepository.findAll(spec);
+    }
+
+    /** Lower number first; no priority last; ties -> newest first. */
+    private List<ProductEntity> sortByPriority(List<ProductEntity> list, Function<ProductEntity, Integer> prio) {
+        Comparator<ProductEntity> c = Comparator
+                .comparing(prio, Comparator.nullsLast(Comparator.<Integer>naturalOrder()))
+                .thenComparing(ProductEntity::getCreatedAt,
+                        Comparator.nullsLast(Comparator.<LocalDateTime>reverseOrder()));
+        List<ProductEntity> copy = new ArrayList<>(list);
+        copy.sort(c);
+        return copy;
+    }
+
+    private List<ProductEntity> applyLimit(List<ProductEntity> list, Integer limit) {
+        return (limit == null || limit <= 0 || limit >= list.size()) ? list : list.subList(0, limit);
+    }
+
+    private int nextPriority(boolean featuredSection, Function<ProductEntity, Integer> prio) {
+        return sectionProducts(false, featuredSection).stream().map(prio)
+                .filter(Objects::nonNull).max(Integer::compare).orElse(0) + 1;
+    }
+
+    private Map<String, Object> featuredState(ProductEntity p) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("featured", p.isFeatured());
+        m.put("featuredPriority", p.getFeaturedPriority());
+        return m;
+    }
+
+    private Map<String, Object> newArrivalState(ProductEntity p) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("newArrival", p.isNewArrival());
+        m.put("newArrivalPriority", p.getNewArrivalPriority());
+        return m;
     }
 }

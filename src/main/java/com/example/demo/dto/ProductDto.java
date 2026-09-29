@@ -263,6 +263,17 @@ public final class ProductDto {
         private BigDecimal perDayPrice, offerPrice;
         private boolean isActive, isVisible;
         private String coverImageUrl;
+        private boolean featured, newArrival;
+        private Integer featuredPriority, newArrivalPriority;
+
+        public boolean isFeatured() { return featured; }
+        public void setFeatured(boolean v) { featured = v; }
+        public boolean isNewArrival() { return newArrival; }
+        public void setNewArrival(boolean v) { newArrival = v; }
+        public Integer getFeaturedPriority() { return featuredPriority; }
+        public void setFeaturedPriority(Integer v) { featuredPriority = v; }
+        public Integer getNewArrivalPriority() { return newArrivalPriority; }
+        public void setNewArrivalPriority(Integer v) { newArrivalPriority = v; }
 
         public UUID getId() { return id; }
         public void setId(UUID v) { id = v; }
@@ -286,6 +297,55 @@ public final class ProductDto {
         public void setCoverImageUrl(String v) { coverImageUrl = v; }
     }
     
+    
+    // ═══════════ FEATURED / NEW ARRIVAL ═══════════
+
+    public static class FeaturedRequest {
+        @NotNull private Boolean featured;      // true = add to Featured, false = remove
+        @Min(0) private Integer priority;       // 1 = first. Optional (auto = last)
+
+        public Boolean getFeatured() { return featured; }
+        public void setFeatured(Boolean v) { featured = v; }
+        public Integer getPriority() { return priority; }
+        public void setPriority(Integer v) { priority = v; }
+    }
+
+    public static class NewArrivalRequest {
+        @NotNull private Boolean newArrival;    // true = add to New Arrivals, false = remove
+        @Min(0) private Integer priority;       // 1 = first. Optional (auto = last)
+
+        public Boolean getNewArrival() { return newArrival; }
+        public void setNewArrival(Boolean v) { newArrival = v; }
+        public Integer getPriority() { return priority; }
+        public void setPriority(Integer v) { priority = v; }
+    }
+
+    public static class ReorderItem {
+        @NotNull private UUID productId;
+        @NotNull @Min(0) private Integer priority;
+
+        public UUID getProductId() { return productId; }
+        public void setProductId(UUID v) { productId = v; }
+        public Integer getPriority() { return priority; }
+        public void setPriority(Integer v) { priority = v; }
+    }
+
+    public static class ReorderRequest {
+        @NotEmpty @Valid private List<ReorderItem> items;
+
+        public List<ReorderItem> getItems() { return items; }
+        public void setItems(List<ReorderItem> v) { items = v; }
+    }
+
+    public static class HomeSectionsResponse {
+        private List<ProductListItemResponse> featured;
+        private List<ProductListItemResponse> newArrivals;
+
+        public List<ProductListItemResponse> getFeatured() { return featured; }
+        public void setFeatured(List<ProductListItemResponse> v) { featured = v; }
+        public List<ProductListItemResponse> getNewArrivals() { return newArrivals; }
+        public void setNewArrivals(List<ProductListItemResponse> v) { newArrivals = v; }
+    }
     
     public static class BulkRowError {
         private int rowNumber;

@@ -65,6 +65,31 @@ public class ProductEntity {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+    
+    
+    @Column(name = "is_featured", nullable = false)
+    private boolean featured = false;
+
+    @Column(name = "featured_priority")
+    private Integer featuredPriority;
+
+    @Column(name = "is_new_arrival", nullable = false)
+    private boolean newArrival = false;
+
+    @Column(name = "new_arrival_priority")
+    private Integer newArrivalPriority;
+    
+    public boolean isFeatured() { return featured; }
+    public void setFeatured(boolean featured) { this.featured = featured; }
+
+    public Integer getFeaturedPriority() { return featuredPriority; }
+    public void setFeaturedPriority(Integer featuredPriority) { this.featuredPriority = featuredPriority; }
+
+    public boolean isNewArrival() { return newArrival; }
+    public void setNewArrival(boolean newArrival) { this.newArrival = newArrival; }
+
+    public Integer getNewArrivalPriority() { return newArrivalPriority; }
+    public void setNewArrivalPriority(Integer newArrivalPriority) { this.newArrivalPriority = newArrivalPriority; }
 
     // Convenience collections — the service manages these explicitly via
     // ProductImageRepository / InventoryRepository, but mapping them here

@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ProductDto;
 import com.example.demo.dto.UserProductDto;
+import com.example.demo.service.ProductService;
 import com.example.demo.service.UserProductService;
 import com.example.demo.util.ApiResponse;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -44,12 +46,14 @@ import java.util.UUID;
 @RequestMapping("/api/v1/products")
 public class UserProductController {
 
-    private final UserProductService productService;
+	private final UserProductService productService;
+	private final ProductService catalogService; // for featured / new arrivals
 
-    public UserProductController(UserProductService productService) {
-        this.productService = productService;
-    }
-
+	public UserProductController(UserProductService productService,
+	                             ProductService catalogService) {
+	    this.productService = productService;
+	    this.catalogService = catalogService;
+	}
     // ─────────────────────────────────────────────
     //  GET /api/v1/products
     //  Paginated, filtered catalogue listing
@@ -154,5 +158,29 @@ public class UserProductController {
                 productService.checkAvailability(id, fromDate, toDate, size);
 
         return ResponseEntity.ok(ApiResponse.success("Availability fetched", result, 200));
+    }
+    
+ // GET /api/v1/products/featured?limit=8
+    @GetMapping("/featured")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> featured(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(ApiResponse.success("Featured products fetched",
+                catalogService.publicFeatured(limit), 200));
+    }
+
+    // GET /api/v1/products/new-arrivals?limit=8
+    @GetMapping("/new-arrivals")
+    public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> newArrivals(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(ApiResponse.success("New arrival products fetched",
+                catalogService.publicNewArrivals(limit), 200));
+    }
+
+    // GET /api/v1/products/home-sections?limit=8  (both lists in one call)
+    @GetMapping("/home-sections")
+    public ResponseEntity<ApiResponse<ProductDto.HomeSectionsResponse>> homeSections(
+            @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(ApiResponse.success("Home sections fetched",
+                catalogService.homeSections(limit), 200));
     }
 }
