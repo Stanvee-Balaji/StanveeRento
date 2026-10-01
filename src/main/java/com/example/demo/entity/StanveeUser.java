@@ -6,9 +6,9 @@ import java.time.ZoneId;
 
 @Entity
 @Table(
-    name = "stanveeShop_user",
+    name = "stanveeRento_user",
     indexes = {
-        @Index(name = "idx_stanveeShop_user_username", columnList = "username", unique = true)
+        @Index(name = "idx_stanveeRento_user_username", columnList = "username", unique = true)
     }
 )
 public class StanveeUser {

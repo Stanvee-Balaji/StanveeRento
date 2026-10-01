@@ -176,11 +176,4 @@ public class UserProductController {
                 catalogService.publicNewArrivals(limit), 200));
     }
 
-    // GET /api/v1/products/home-sections?limit=8  (both lists in one call)
-    @GetMapping("/home-sections")
-    public ResponseEntity<ApiResponse<ProductDto.HomeSectionsResponse>> homeSections(
-            @RequestParam(required = false) Integer limit) {
-        return ResponseEntity.ok(ApiResponse.success("Home sections fetched",
-                catalogService.homeSections(limit), 200));
-    }
 }
