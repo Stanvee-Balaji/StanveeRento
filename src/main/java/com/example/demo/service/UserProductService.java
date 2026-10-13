@@ -397,6 +397,136 @@ public class UserProductService {
         r.setTotalInventoryCount(inventory.size());
         return r;
     }
+    
+    // ═══════════════════════════════════════════
+    //  PRODUCT DETAILS PAGE (images + pricing + sizes + related)
+    // ═══════════════════════════════════════════
+
+    public UserProductDto.ProductFullDetailsResponse getProductDetails(
+            UUID id, LocalDateTime fromDate, LocalDateTime toDate) {
+
+        if ((fromDate == null) != (toDate == null)) {
+            throw new BadRequestException("Provide both fromDate and toDate, or neither");
+        }
+        boolean hasWindow = fromDate != null;
+        if (hasWindow && !toDate.isAfter(fromDate)) {
+            throw new BadRequestException("toDate must be after fromDate");
+        }
+
+        ProductEntity product = findVisibleProduct(id);
+        List<InventoryEntity> inventory = inventoryRepository.findByProduct_Id(id);
+        List<ProductImageEntity> images = imageRepository.findByProduct_Id(id);
+
+        // ── images ──
+        List<UserProductDto.ImageInfo> imageList = new ArrayList<>();
+        for (int i = 0; i < images.size(); i++) {
+            UserProductDto.ImageInfo ii = new UserProductDto.ImageInfo();
+            ii.setId(images.get(i).getId());
+            ii.setImageUrl(images.get(i).getImageUrl());
+            ii.setSortOrder(i);
+            ii.setCover(i == 0);
+            imageList.add(ii);
+        }
+
+        // ── sizes + units ──
+        Map<String, List<InventoryEntity>> bySize = inventory.stream()
+                .filter(inv -> inv.getSize() != null)
+                .collect(Collectors.groupingBy(
+                        inv -> inv.getSize().trim(),
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+
+        int totalAvailable = 0;
+        List<UserProductDto.SizeInfo> sizeList = new ArrayList<>();
+        for (Map.Entry<String, List<InventoryEntity>> e : bySize.entrySet()) {
+            UserProductDto.SizeInfo si = new UserProductDto.SizeInfo();
+            int avail = 0;
+            for (InventoryEntity inv : e.getValue()) {
+                boolean ok = hasWindow
+                        ? isAvailableForDates(inv, fromDate, toDate)
+                        : isGenerallyAvailable(inv);
+                UserProductDto.UnitInfo u = new UserProductDto.UnitInfo();
+                u.setInventoryId(inv.getId());
+                u.setSku(inv.getSku());
+                u.setCondition(inv.getCondition());
+                u.setAvailable(ok);
+                si.getUnits().add(u);
+                if (ok) avail++;
+            }
+            si.setSize(e.getKey());
+            si.setTotalCount(e.getValue().size());
+            si.setAvailableCount(avail);
+            si.setInStock(avail > 0);
+            totalAvailable += avail;
+            sizeList.add(si);
+        }
+
+        // ── pricing ──
+        BigDecimal perDay = product.getPerDayPrice();
+        BigDecimal offer = product.getOfferPrice();
+        boolean hasOffer = offer != null && offer.signum() > 0
+                && perDay != null && perDay.signum() > 0
+                && offer.compareTo(perDay) < 0;
+
+        UserProductDto.PricingInfo pricing = new UserProductDto.PricingInfo();
+        pricing.setPerDayPrice(perDay);
+        pricing.setWeekendPrice(product.getWeekendPrice());
+        pricing.setOfferPrice(offer);
+        pricing.setSecurityDeposit(product.getSecurityDeposit());
+        pricing.setEffectivePrice(hasOffer ? offer : perDay);
+        pricing.setDiscountPercent(hasOffer
+                ? perDay.subtract(offer)
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(perDay, 0, java.math.RoundingMode.HALF_UP)
+                        .intValue()
+                : 0);
+
+        // ── category ──
+        UserProductDto.CategoryInfo cat = null;
+        if (product.getCategory() != null) {
+            cat = new UserProductDto.CategoryInfo();
+            cat.setId(product.getCategory().getId());
+            cat.setName(product.getCategory().getName());
+        }
+
+        // ── related products (same category, max 6, excluding current) ──
+        List<UserProductDto.ProductSummaryResponse> related = new ArrayList<>();
+        if (product.getCategory() != null) {
+            Specification<ProductEntity> spec = buildCatalogueSpec(
+                    product.getCategory().getId(), null, null, null, null, null);
+            Page<ProductEntity> relatedPage = productRepository.findAll(
+                    spec, PageRequest.of(0, 7, Sort.by(Sort.Direction.DESC, "createdAt")));
+            related = relatedPage.getContent().stream()
+                    .filter(p -> !p.getId().equals(id))
+                    .limit(6)
+                    .map(this::toSummary)
+                    .collect(Collectors.toList());
+        }
+
+        // ── window ──
+        UserProductDto.AvailabilityWindow win = new UserProductDto.AvailabilityWindow();
+        win.setFromDate(fromDate);
+        win.setToDate(toDate);
+
+        // ── final response ──
+        UserProductDto.ProductFullDetailsResponse r = new UserProductDto.ProductFullDetailsResponse();
+        r.setId(product.getId());
+        r.setName(product.getName());
+        r.setDescription(product.getDescription());
+        r.setColour(product.getColour());
+        r.setOccasion(product.getOccasion());
+        r.setCategory(cat);
+        r.setPricing(pricing);
+        r.setImages(imageList);
+        r.setSizes(sizeList);
+        r.setTotalUnits(inventory.size());
+        r.setTotalAvailableUnits(totalAvailable);
+        r.setInStock(totalAvailable > 0);
+        r.setAvailabilityWindow(win);
+        r.setCreatedAt(product.getCreatedAt());
+        r.setRelatedProducts(related);
+        return r;
+    }
 
     private UserProductDto.ProductDetailResponse toDetail(ProductEntity product) {
 

@@ -282,4 +282,134 @@ public class UserProductDto {
         public BigDecimal getMaxPrice() { return maxPrice; }
         public void setMaxPrice(BigDecimal maxPrice) { this.maxPrice = maxPrice; }
     }
+
+    // ═══════════════════════════════════════════
+    //  FULL PRODUCT DETAILS PAGE
+    //  (GET /api/v1/products/{id}/details)
+    // ═══════════════════════════════════════════
+
+    public static class CategoryInfo {
+        private UUID id;
+        private String name;
+        public UUID getId() { return id; }
+        public void setId(UUID v) { id = v; }
+        public String getName() { return name; }
+        public void setName(String v) { name = v; }
+    }
+
+    public static class PricingInfo {
+        private BigDecimal perDayPrice, weekendPrice, offerPrice, effectivePrice, securityDeposit;
+        private int discountPercent;
+        public BigDecimal getPerDayPrice() { return perDayPrice; }
+        public void setPerDayPrice(BigDecimal v) { perDayPrice = v; }
+        public BigDecimal getWeekendPrice() { return weekendPrice; }
+        public void setWeekendPrice(BigDecimal v) { weekendPrice = v; }
+        public BigDecimal getOfferPrice() { return offerPrice; }
+        public void setOfferPrice(BigDecimal v) { offerPrice = v; }
+        public BigDecimal getEffectivePrice() { return effectivePrice; }
+        public void setEffectivePrice(BigDecimal v) { effectivePrice = v; }
+        public BigDecimal getSecurityDeposit() { return securityDeposit; }
+        public void setSecurityDeposit(BigDecimal v) { securityDeposit = v; }
+        public int getDiscountPercent() { return discountPercent; }
+        public void setDiscountPercent(int v) { discountPercent = v; }
+    }
+
+    public static class ImageInfo {
+        private UUID id;
+        private String imageUrl;
+        private int sortOrder;
+        private boolean cover;
+        public UUID getId() { return id; }
+        public void setId(UUID v) { id = v; }
+        public String getImageUrl() { return imageUrl; }
+        public void setImageUrl(String v) { imageUrl = v; }
+        public int getSortOrder() { return sortOrder; }
+        public void setSortOrder(int v) { sortOrder = v; }
+        public boolean isCover() { return cover; }
+        public void setCover(boolean v) { cover = v; }
+    }
+
+    public static class UnitInfo {
+        private UUID inventoryId;
+        private String sku, condition;
+        private boolean available;
+        public UUID getInventoryId() { return inventoryId; }
+        public void setInventoryId(UUID v) { inventoryId = v; }
+        public String getSku() { return sku; }
+        public void setSku(String v) { sku = v; }
+        public String getCondition() { return condition; }
+        public void setCondition(String v) { condition = v; }
+        public boolean isAvailable() { return available; }
+        public void setAvailable(boolean v) { available = v; }
+    }
+
+    public static class SizeInfo {
+        private String size;
+        private int totalCount, availableCount;
+        private boolean inStock;
+        private List<UnitInfo> units = new java.util.ArrayList<>();
+        public String getSize() { return size; }
+        public void setSize(String v) { size = v; }
+        public int getTotalCount() { return totalCount; }
+        public void setTotalCount(int v) { totalCount = v; }
+        public int getAvailableCount() { return availableCount; }
+        public void setAvailableCount(int v) { availableCount = v; }
+        public boolean isInStock() { return inStock; }
+        public void setInStock(boolean v) { inStock = v; }
+        public List<UnitInfo> getUnits() { return units; }
+        public void setUnits(List<UnitInfo> v) { units = v; }
+    }
+
+    public static class AvailabilityWindow {
+        private LocalDateTime fromDate, toDate;
+        public LocalDateTime getFromDate() { return fromDate; }
+        public void setFromDate(LocalDateTime v) { fromDate = v; }
+        public LocalDateTime getToDate() { return toDate; }
+        public void setToDate(LocalDateTime v) { toDate = v; }
+    }
+
+    public static class ProductFullDetailsResponse {
+        private UUID id;
+        private String name, description, colour, occasion;
+        private CategoryInfo category;
+        private PricingInfo pricing;
+        private List<ImageInfo> images = new java.util.ArrayList<>();
+        private List<SizeInfo> sizes = new java.util.ArrayList<>();
+        private int totalUnits, totalAvailableUnits;
+        private boolean inStock;
+        private AvailabilityWindow availabilityWindow;
+        private LocalDateTime createdAt;
+        private List<ProductSummaryResponse> relatedProducts = new java.util.ArrayList<>();
+
+        public UUID getId() { return id; }
+        public void setId(UUID v) { id = v; }
+        public String getName() { return name; }
+        public void setName(String v) { name = v; }
+        public String getDescription() { return description; }
+        public void setDescription(String v) { description = v; }
+        public String getColour() { return colour; }
+        public void setColour(String v) { colour = v; }
+        public String getOccasion() { return occasion; }
+        public void setOccasion(String v) { occasion = v; }
+        public CategoryInfo getCategory() { return category; }
+        public void setCategory(CategoryInfo v) { category = v; }
+        public PricingInfo getPricing() { return pricing; }
+        public void setPricing(PricingInfo v) { pricing = v; }
+        public List<ImageInfo> getImages() { return images; }
+        public void setImages(List<ImageInfo> v) { images = v; }
+        public List<SizeInfo> getSizes() { return sizes; }
+        public void setSizes(List<SizeInfo> v) { sizes = v; }
+        public int getTotalUnits() { return totalUnits; }
+        public void setTotalUnits(int v) { totalUnits = v; }
+        public int getTotalAvailableUnits() { return totalAvailableUnits; }
+        public void setTotalAvailableUnits(int v) { totalAvailableUnits = v; }
+        public boolean isInStock() { return inStock; }
+        public void setInStock(boolean v) { inStock = v; }
+        public AvailabilityWindow getAvailabilityWindow() { return availabilityWindow; }
+        public void setAvailabilityWindow(AvailabilityWindow v) { availabilityWindow = v; }
+        public LocalDateTime getCreatedAt() { return createdAt; }
+        public void setCreatedAt(LocalDateTime v) { createdAt = v; }
+        public List<ProductSummaryResponse> getRelatedProducts() { return relatedProducts; }
+        public void setRelatedProducts(List<ProductSummaryResponse> v) { relatedProducts = v; }
+    }
 }

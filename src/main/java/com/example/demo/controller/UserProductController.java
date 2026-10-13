@@ -160,6 +160,24 @@ public class UserProductController {
         return ResponseEntity.ok(ApiResponse.success("Availability fetched", result, 200));
     }
     
+    // ─────────────────────────────────────────────
+    //  GET /api/v1/products/{id}/details
+    //  Full product page: images, pricing, sizes, related
+    //  fromDate / toDate are OPTIONAL (send both or neither)
+    // ─────────────────────────────────────────────
+    @GetMapping("/{id}/details")
+    public ResponseEntity<ApiResponse<UserProductDto.ProductFullDetailsResponse>> getProductDetails(
+            @PathVariable UUID id,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
+
+        return ResponseEntity.ok(ApiResponse.success(
+                "Product details fetched",
+                productService.getProductDetails(id, fromDate, toDate), 200));
+    }
+
  // GET /api/v1/products/featured?limit=8
     @GetMapping("/featured")
     public ResponseEntity<ApiResponse<List<ProductDto.ProductListItemResponse>>> featured(
