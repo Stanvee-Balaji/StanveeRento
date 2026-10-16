@@ -152,10 +152,11 @@ public class UserProductController {
             @PathVariable UUID id,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
-            @RequestParam(required = false) String size) {
+            @RequestParam(required = false) String size,
+            @RequestParam(required = false) String colour) {
 
         UserProductDto.AvailabilityResponse result =
-                productService.checkAvailability(id, fromDate, toDate, size);
+                productService.checkAvailability(id, fromDate, toDate, size, colour);
 
         return ResponseEntity.ok(ApiResponse.success("Availability fetched", result, 200));
     }
