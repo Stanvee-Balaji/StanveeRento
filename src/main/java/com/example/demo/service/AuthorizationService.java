@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+
+
 /**
  * Central, database-driven authorization used by EVERY Sub-Admin API.
  * A valid JWT alone is NEVER sufficient — every request re-checks the
@@ -100,6 +102,7 @@ public class AuthorizationService {
         if (role == null || role.getDeletedAt() != null) {
             throw new SuperAdminService.ForbiddenException("Assigned role no longer exists");
         }
+        
         if (!role.isActive()) {
             throw new SuperAdminService.ForbiddenException("Assigned role is inactive");
         }
