@@ -69,6 +69,7 @@ public class SubscriptionPlanService {
         plan.setDurationValue(request.getDurationValue());
         plan.setDurationUnit(request.getDurationUnit().trim().toUpperCase());
         plan.setRecommended(request.isRecommended());
+        applyDeposit(plan, request.isDepositRequired(), request.getDepositAmount());
         plan.setStatus("DRAFT");
         plan.setActive(true);
         plan.setCreatedBy(actorId);
@@ -125,7 +126,9 @@ public class SubscriptionPlanService {
         plan.setPlanName(request.getPlanName().trim());
         plan.setDescription(request.getDescription());
         plan.setPrice(request.getPrice());
+//        plan.setCurrency(request.getCurrency().trim().toUpperCase());
         plan.setCurrency(request.getCurrency().trim().toUpperCase());
+        applyDeposit(plan, request.isDepositRequired(), request.getDepositAmount());
         plan.setDurationValue(request.getDurationValue());
         plan.setDurationUnit(request.getDurationUnit().trim().toUpperCase());
         plan.setRecommended(request.isRecommended());
@@ -271,6 +274,21 @@ public class SubscriptionPlanService {
         }
     }
 
+    /** Deposit is refundable and separate from price. required=true needs amount > 0; required=false forces 0. */
+    private void applyDeposit(SubscriptionPlanEntity plan, boolean required, java.math.BigDecimal amount) {
+        if (required) {
+            if (amount == null || amount.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                throw new SuperAdminService.BadRequestException(
+                        "depositAmount must be greater than 0 when depositRequired is true");
+            }
+            plan.setDepositRequired(true);
+            plan.setDepositAmount(amount);
+        } else {
+            plan.setDepositRequired(false);
+            plan.setDepositAmount(java.math.BigDecimal.ZERO);
+        }
+    }
+
     private void validateDurationUnit(String unit) {
         if (unit == null || !DURATION_UNITS.contains(unit.trim().toUpperCase())) {
             throw new SuperAdminService.BadRequestException(
@@ -297,7 +315,10 @@ public class SubscriptionPlanService {
         state.put("currency", plan.getCurrency());
         state.put("durationValue", plan.getDurationValue());
         state.put("durationUnit", plan.getDurationUnit());
+//        state.put("isRecommended", plan.isRecommended());
         state.put("isRecommended", plan.isRecommended());
+        state.put("depositRequired", plan.isDepositRequired());
+        state.put("depositAmount", plan.getDepositAmount());
         state.put("status", plan.getStatus());
         state.put("active", plan.isActive());
         state.put("featureCount", featureRepository.findByPlan_Id(plan.getId()).size());
@@ -321,7 +342,10 @@ public class SubscriptionPlanService {
         r.setActive(plan.isActive());
         r.setCreatedAt(plan.getCreatedAt());
         r.setUpdatedAt(plan.getUpdatedAt());
+//        r.setDeletedAt(plan.getDeletedAt());
         r.setDeletedAt(plan.getDeletedAt());
+        r.setDepositRequired(plan.isDepositRequired());
+        r.setDepositAmount(plan.getDepositAmount());
 
         r.setFeatures(featureRepository.findByPlan_Id(plan.getId()).stream().map(f -> {
             SubscriptionPlanDto.FeatureResponse fr = new SubscriptionPlanDto.FeatureResponse();
@@ -346,6 +370,8 @@ public class SubscriptionPlanService {
 
     private SubscriptionPlanDto.PlanListItemResponse toListItem(SubscriptionPlanEntity plan) {
         SubscriptionPlanDto.PlanListItemResponse r = new SubscriptionPlanDto.PlanListItemResponse();
+        r.setDepositRequired(plan.isDepositRequired());
+        r.setDepositAmount(plan.getDepositAmount());
         r.setId(plan.getId());
         r.setPlanName(plan.getPlanName());
         r.setCurrency(plan.getCurrency());

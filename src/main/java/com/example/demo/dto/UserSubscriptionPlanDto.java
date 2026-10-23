@@ -63,6 +63,13 @@ public final class UserSubscriptionPlanDto {
      * use {@link PlanDetailResponse} for the full breakdown.
      */
     public static class PlanSummaryResponse {
+        private boolean depositRequired;
+        private BigDecimal depositAmount;
+
+        public boolean isDepositRequired() { return depositRequired; }
+        public void setDepositRequired(boolean v) { depositRequired = v; }
+        public BigDecimal getDepositAmount() { return depositAmount; }
+        public void setDepositAmount(BigDecimal v) { depositAmount = v; }
         private UUID id;
         private String planName;
         private String description;
@@ -101,6 +108,13 @@ public final class UserSubscriptionPlanDto {
      * Returned by the single-plan endpoint GET /api/v1/plans/{id}.
      */
     public static class PlanDetailResponse {
+        private boolean depositRequired;
+        private BigDecimal depositAmount;
+
+        public boolean isDepositRequired() { return depositRequired; }
+        public void setDepositRequired(boolean v) { depositRequired = v; }
+        public BigDecimal getDepositAmount() { return depositAmount; }
+        public void setDepositAmount(BigDecimal v) { depositAmount = v; }
         private UUID id;
         private String planName;
         private String description;

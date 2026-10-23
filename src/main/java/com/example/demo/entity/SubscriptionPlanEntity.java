@@ -36,6 +36,12 @@ public class SubscriptionPlanEntity {
     @Column(name = "is_recommended", nullable = false)
     private boolean isRecommended = false;
 
+    @Column(name = "deposit_required", nullable = false)
+    private boolean depositRequired = false;
+
+    @Column(name = "deposit_amount", nullable = false, precision = 10, scale = 2)
+    private BigDecimal depositAmount = BigDecimal.ZERO;
+
     @Column(nullable = false)
     private String status = "DRAFT"; // DRAFT / ACTIVE / INACTIVE / ARCHIVED
 
@@ -90,7 +96,13 @@ public class SubscriptionPlanEntity {
     public String getDurationUnit() { return durationUnit; }
     public void setDurationUnit(String v) { this.durationUnit = v; }
     public boolean isRecommended() { return isRecommended; }
+//    public void setRecommended(boolean v) { this.isRecommended = v; }
+    
     public void setRecommended(boolean v) { this.isRecommended = v; }
+    public boolean isDepositRequired() { return depositRequired; }
+    public void setDepositRequired(boolean v) { this.depositRequired = v; }
+    public BigDecimal getDepositAmount() { return depositAmount; }
+    public void setDepositAmount(BigDecimal v) { this.depositAmount = v; }
     public String getStatus() { return status; }
     public void setStatus(String v) { this.status = v; }
     public boolean isActive() { return active; }
@@ -107,4 +119,6 @@ public class SubscriptionPlanEntity {
     public void setFeatures(List<PlanFeatureEntity> v) { this.features = v; }
     public List<PlanLimitEntity> getLimits() { return limits; }
     public void setLimits(List<PlanLimitEntity> v) { this.limits = v; }
+    
+    
 }

@@ -251,6 +251,8 @@ public class UserSubscriptionPlanService {
 
     private UserSubscriptionPlanDto.PlanSummaryResponse toSummary(SubscriptionPlanEntity plan) {
         UserSubscriptionPlanDto.PlanSummaryResponse r = new UserSubscriptionPlanDto.PlanSummaryResponse();
+        r.setDepositRequired(plan.isDepositRequired());
+        r.setDepositAmount(plan.getDepositAmount());
         r.setId(plan.getId());
         r.setPlanName(plan.getPlanName());
         r.setDescription(plan.getDescription());
@@ -265,7 +267,10 @@ public class UserSubscriptionPlanService {
     }
 
     private UserSubscriptionPlanDto.PlanDetailResponse toDetail(SubscriptionPlanEntity plan) {
+//        UserSubscriptionPlanDto.PlanDetailResponse r = new UserSubscriptionPlanDto.PlanDetailResponse();
         UserSubscriptionPlanDto.PlanDetailResponse r = new UserSubscriptionPlanDto.PlanDetailResponse();
+        r.setDepositRequired(plan.isDepositRequired());
+        r.setDepositAmount(plan.getDepositAmount());
         r.setId(plan.getId());
         r.setPlanName(plan.getPlanName());
         r.setDescription(plan.getDescription());

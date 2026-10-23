@@ -52,6 +52,14 @@ public final class SubscriptionPlanDto {
     // ═══════════════════════════════════════════
 
     public static class CreatePlanRequest {
+        private boolean depositRequired = false;
+        @DecimalMin(value = "0.0", inclusive = true)
+        private BigDecimal depositAmount;
+
+        public boolean isDepositRequired() { return depositRequired; }
+        public void setDepositRequired(boolean v) { depositRequired = v; }
+        public BigDecimal getDepositAmount() { return depositAmount; }
+        public void setDepositAmount(BigDecimal v) { depositAmount = v; }
         @NotBlank
         private String planName;
         private String description;
@@ -89,6 +97,14 @@ public final class SubscriptionPlanDto {
     }
 
     public static class UpdatePlanRequest {
+        private boolean depositRequired = false;
+        @DecimalMin(value = "0.0", inclusive = true)
+        private BigDecimal depositAmount;
+
+        public boolean isDepositRequired() { return depositRequired; }
+        public void setDepositRequired(boolean v) { depositRequired = v; }
+        public BigDecimal getDepositAmount() { return depositAmount; }
+        public void setDepositAmount(BigDecimal v) { depositAmount = v; }
         @NotBlank
         private String planName;
         private String description;
@@ -184,6 +200,13 @@ public final class SubscriptionPlanDto {
     }
 
     public static class PlanResponse {
+        private boolean depositRequired;
+        private BigDecimal depositAmount;
+
+        public boolean isDepositRequired() { return depositRequired; }
+        public void setDepositRequired(boolean v) { depositRequired = v; }
+        public BigDecimal getDepositAmount() { return depositAmount; }
+        public void setDepositAmount(BigDecimal v) { depositAmount = v; }
         private UUID id, createdBy, updatedBy;
         private String planName, description, currency, durationUnit, status;
         private BigDecimal price;
@@ -230,6 +253,13 @@ public final class SubscriptionPlanDto {
     }
 
     public static class PlanListItemResponse {
+        private boolean depositRequired;
+        private BigDecimal depositAmount;
+
+        public boolean isDepositRequired() { return depositRequired; }
+        public void setDepositRequired(boolean v) { depositRequired = v; }
+        public BigDecimal getDepositAmount() { return depositAmount; }
+        public void setDepositAmount(BigDecimal v) { depositAmount = v; }
         private UUID id;
         private String planName, currency, durationUnit, status;
         private BigDecimal price;
