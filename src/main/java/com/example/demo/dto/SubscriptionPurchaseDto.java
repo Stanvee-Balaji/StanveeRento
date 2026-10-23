@@ -24,24 +24,25 @@ public final class SubscriptionPurchaseDto {
     public static class PurchaseRequest {
         @NotNull
         private UUID planId;
-        @NotBlank @Size(max = 100)
+        @NotBlank @Size(max = 50) @Pattern(regexp = "^[A-Za-z\\d\\s]+$", message = "Invalid first name")
         private String buyerFirstName;
-        @NotBlank @Size(max = 100)
+        @NotBlank @Size(max = 50) @Pattern(regexp = "^[A-Za-z\\d\\s]+$", message = "Invalid last name")
         private String buyerLastName;
-        @NotBlank @Email @Size(max = 100)
+        @NotBlank @Email @Size(min = 6, max = 50)
         private String buyerEmail;
-        @NotBlank @Size(max = 20)
+        @NotBlank @Size(min = 8, max = 15) @Pattern(regexp = "^[\\d\\s.\\-]+$", message = "Invalid phone number")
         private String buyerPhone;
         @Size(max = 255)
         private String buyerAddress;
-        @Size(max = 100)
+        @Size(max = 50) @Pattern(regexp = "^[A-Za-z\\d\\s]*$", message = "Invalid city")
         private String buyerCity;
-        @Size(max = 100)
+        @Size(max = 50) @Pattern(regexp = "^[A-Za-z\\d\\s]*$", message = "Invalid state")
         private String buyerState;
-        @Size(max = 20)
+        @Size(max = 8) @Pattern(regexp = "^[A-Za-z\\d]*$", message = "Invalid pincode")
         private String buyerPinCode;
-        @Size(max = 100)
+        @Size(max = 50) @Pattern(regexp = "^[A-Za-z\\d\\s]*$", message = "Invalid country")
         private String buyerCountry;
+ 
 
         public UUID getPlanId() { return planId; }
         public void setPlanId(UUID v) { planId = v; }

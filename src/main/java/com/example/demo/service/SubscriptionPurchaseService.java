@@ -454,8 +454,9 @@ public class SubscriptionPurchaseService {
     }
 
     private String newOrderId(LocalDateTime now) {
-        return ORDER_PREFIX + now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-                + UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();   // 23 chars
+        // SUB (3) + yyMMddHHmmss (12) + 5 random = 20 chars (Airpay max is 20, alphanumeric only)
+        return ORDER_PREFIX + now.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 5).toUpperCase();
     }
 
     /** Global audit (audit_logs) + order-level audit (transaction_audit_logs) for every admin action. */
