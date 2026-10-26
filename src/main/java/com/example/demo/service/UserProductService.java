@@ -13,7 +13,10 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.example.demo.dto.ProductPlanAccessDto;
+import com.example.demo.dto.UserProductDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,6 +36,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 public class UserProductService {
+
+    @Autowired
+    private ProductAccessService productAccessService;
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -430,6 +436,9 @@ public class UserProductService {
         r.setCoverImageUrl(coverImageUrl);
         r.setAvailableSizeCount((int) availableSizes);
         r.setTotalInventoryCount(inventory.size());
+        ProductPlanAccessDto.AccessResponse access = productAccessService.getAccessInfo(product.getId());
+        r.setPlanRestricted(access.isRestricted());
+        r.setAllowedPlans(access.getPlans());
         return r;
     }
 
@@ -562,6 +571,9 @@ public class UserProductService {
         r.setAvailabilityWindow(win);
         r.setCreatedAt(product.getCreatedAt());
         r.setRelatedProducts(related);
+        ProductPlanAccessDto.AccessResponse access = productAccessService.getAccessInfo(product.getId());
+        r.setPlanRestricted(access.isRestricted());
+        r.setAllowedPlans(access.getPlans());
         return r;
     }
 
@@ -618,6 +630,9 @@ public class UserProductService {
         r.setImages(imageResponses);
         r.setSizes(sizeSlots);
         r.setStock(buildStock(product, inventory));
+        ProductPlanAccessDto.AccessResponse access = productAccessService.getAccessInfo(product.getId());
+        r.setPlanRestricted(access.isRestricted());
+        r.setAllowedPlans(access.getPlans());
         r.setCreatedAt(product.getCreatedAt());
         return r;
     }

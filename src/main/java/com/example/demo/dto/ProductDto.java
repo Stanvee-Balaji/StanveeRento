@@ -301,6 +301,12 @@ public final class ProductDto {
     }
 
     public static class ProductListItemResponse {
+        private boolean planRestricted;
+        private List<ProductPlanAccessDto.PlanRef> allowedPlans = new ArrayList<>();
+        public boolean isPlanRestricted() { return planRestricted; }
+        public void setPlanRestricted(boolean v) { planRestricted = v; }
+        public List<ProductPlanAccessDto.PlanRef> getAllowedPlans() { return allowedPlans; }
+        public void setAllowedPlans(List<ProductPlanAccessDto.PlanRef> v) { allowedPlans = v; }
         private UUID id, categoryId;
         private String name, colour, occasion;
         private BigDecimal perDayPrice, offerPrice;

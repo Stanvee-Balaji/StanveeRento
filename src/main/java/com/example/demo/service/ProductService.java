@@ -2,7 +2,8 @@
 
 
 package com.example.demo.service;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import com.example.demo.dto.ProductDto;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
@@ -32,6 +33,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ProductService {
+
+    @Autowired
+    private ProductAccessService productAccessService;
 
     private static final Set<String> CONDITIONS = Set.of("NEW", "GOOD", "FAIR", "POOR");
     private static final Set<String> INVENTORY_STATUSES = Set.of("AVAILABLE", "RENTED", "CLEANING", "DAMAGED");

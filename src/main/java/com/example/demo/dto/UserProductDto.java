@@ -18,7 +18,15 @@ public class UserProductDto {
 
     // ═══════════ CATALOGUE LIST ═══════════
 
-    public static class ProductSummaryResponse {
+	public static class ProductSummaryResponse {
+        private boolean planRestricted;
+        private List<ProductPlanAccessDto.PlanRef> allowedPlans = new ArrayList<>();
+        public boolean isPlanRestricted() { return planRestricted; }
+        public void setPlanRestricted(boolean v) { planRestricted = v; }
+        public List<ProductPlanAccessDto.PlanRef> getAllowedPlans() { return allowedPlans; }
+        public void setAllowedPlans(List<ProductPlanAccessDto.PlanRef> v) { allowedPlans = v; }
+        
+        
         private UUID id;
         private UUID categoryId;
         private String categoryName;
@@ -92,6 +100,12 @@ public class UserProductDto {
     // ═══════════ PRODUCT DETAIL (GET /{id}) ═══════════
 
     public static class ProductDetailResponse {
+        private boolean planRestricted;
+        private List<ProductPlanAccessDto.PlanRef> allowedPlans = new ArrayList<>();
+        public boolean isPlanRestricted() { return planRestricted; }
+        public void setPlanRestricted(boolean v) { planRestricted = v; }
+        public List<ProductPlanAccessDto.PlanRef> getAllowedPlans() { return allowedPlans; }
+        public void setAllowedPlans(List<ProductPlanAccessDto.PlanRef> v) { allowedPlans = v; }
         private UUID id;
         private UUID categoryId;
         private String categoryName;
@@ -402,6 +416,12 @@ public class UserProductDto {
     }
 
     public static class ProductFullDetailsResponse {
+        private boolean planRestricted;
+        private List<ProductPlanAccessDto.PlanRef> allowedPlans = new ArrayList<>();
+        public boolean isPlanRestricted() { return planRestricted; }
+        public void setPlanRestricted(boolean v) { planRestricted = v; }
+        public List<ProductPlanAccessDto.PlanRef> getAllowedPlans() { return allowedPlans; }
+        public void setAllowedPlans(List<ProductPlanAccessDto.PlanRef> v) { allowedPlans = v; }
         private UUID id;
         private String name, description, colour, occasion;
         private List<String> colours = new ArrayList<>();                 // NEW
