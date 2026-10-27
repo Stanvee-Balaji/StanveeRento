@@ -79,13 +79,34 @@ public class AirpayService {
         tokenPostParams.put("encdata", encTokenJson);
         tokenPostParams.put("checksum", crypto.calculateChecksum(tokenRequestMap));
 
-        String tokenRawResponse;
-        try {
-            tokenRawResponse = http.sendPostData(config.getTokenUrl(), tokenPostParams);
-        } catch (Exception e) {
-            log.error("orderId={} — token API call failed: {}", req.orderid(), e.getMessage());
-            transactionService.markInitError(txn, "Token API call failed: " + e.getMessage());
-            throw e;
+//        String tokenRawResponse;
+//        try {
+//            tokenRawResponse = http.sendPostData(config.getTokenUrl(), tokenPostParams);
+//        } catch (Exception e) {
+//            log.error("orderId={} — token API call failed: {}", req.orderid(), e.getMessage());
+//            transactionService.markInitError(txn, "Token API call failed: " + e.getMessage());
+//            throw e;
+//        }
+        
+        String tokenRawResponse = null;
+        Exception lastError = null;
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            try {
+                tokenRawResponse = http.sendPostData(config.getTokenUrl(), tokenPostParams);
+                lastError = null;
+                break;
+            } catch (java.net.SocketTimeoutException e) {
+                lastError = e;
+                log.warn("orderId={} token call timed out (attempt {}/3)", req.orderid(), attempt);
+            } catch (Exception e) {
+                lastError = e;
+                break;   // non-timeout errors: do not retry
+            }
+        }
+        if (lastError != null) {
+            log.error("orderId={} — token API call failed: {}", req.orderid(), lastError.getMessage());
+            transactionService.markInitError(txn, "Token API call failed: " + lastError.getMessage());
+            throw lastError;
         }
         transactionService.logAudit(txn, AuditEventType.TOKEN_RESPONSE, tokenRawResponse, null);
 

@@ -84,12 +84,20 @@ public class SubscriptionPurchaseService {
     /** Creates a PENDING_PAYMENT purchase (price snapshotted from the DB plan) or reuses a recent one. */
     @Transactional
     public UserSubscriptionEntity createOrReusePending(String username, SubscriptionPlanEntity plan) {
+//        LocalDateTime now = LocalINDTime.now();
+//        Optional<UserSubscriptionEntity> existing = repo
+//                .findFirstByUsernameAndPlanIdAndStatusAndCreatedAtAfterOrderByCreatedAtDesc(
+//                        username, plan.getId(), Status.PENDING_PAYMENT, now.minusMinutes(PENDING_REUSE_MINUTES));
+//
+//        UserSubscriptionEntity p = existing.orElseGet(UserSubscriptionEntity::new);
+    	
         LocalDateTime now = LocalINDTime.now();
-        Optional<UserSubscriptionEntity> existing = repo
-                .findFirstByUsernameAndPlanIdAndStatusAndCreatedAtAfterOrderByCreatedAtDesc(
-                        username, plan.getId(), Status.PENDING_PAYMENT, now.minusMinutes(PENDING_REUSE_MINUTES));
 
-        UserSubscriptionEntity p = existing.orElseGet(UserSubscriptionEntity::new);
+        // Always start a fresh purchase row with a NEW order id (never reuse a pending one).
+        // Airpay can reject an order id it has already seen, so each attempt needs its own id.
+        // Old abandoned PENDING rows are cleaned up by expireStalePending() below.
+        UserSubscriptionEntity p = new UserSubscriptionEntity();
+    	
         boolean isNew = p.getId() == null;
         if (isNew) {
             p.setUsername(username);
@@ -156,7 +164,8 @@ public class SubscriptionPurchaseService {
                 return;
             }
             if (!amountMatches(p, ipnAmount)) {
-                moveToReview(p, before, "Paid amount " + ipnAmount + " does not match plan price " + p.getPrice());
+//                moveToReview(p, before, "Paid amount " + ipnAmount + " does not match plan price " + p.getPrice());
+                moveToReview(p, before, "Paid amount " + ipnAmount + " does not match the expected amount sent to Airpay (plan price " + p.getPrice() + " + deposit)");
                 return;
             }
             activate(p, "AUTO", "Payment confirmed by Airpay IPN");
@@ -422,12 +431,17 @@ public class SubscriptionPurchaseService {
 
     private boolean amountMatches(UserSubscriptionEntity p, String ipnAmount) {
         try {
-            return ipnAmount != null && new BigDecimal(ipnAmount.trim()).compareTo(p.getPrice()) == 0;
+            if (ipnAmount == null) return false;
+            BigDecimal paid = new BigDecimal(ipnAmount.trim());
+            // expected = amount actually sent to Airpay (price + deposit), stored on the transaction row
+            BigDecimal expected = transactionService.findByOrderId(p.getOrderId())
+                    .map(Transaction::getAmount)
+                    .orElse(p.getPrice());
+            return paid.compareTo(expected) == 0;
         } catch (Exception e) {
             return false;
         }
     }
-
     private boolean isRunning(UserSubscriptionEntity p) {
         LocalDateTime now = LocalINDTime.now();
         return p.getStatus() == Status.ACTIVE && p.getStartDate() != null && p.getEndDate() != null

@@ -46,8 +46,10 @@ public class HttpUtil {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setUseCaches(false);
-            conn.setConnectTimeout(10_000);
-            conn.setReadTimeout(15_000);
+//            conn.setConnectTimeout(10_000);
+//            conn.setReadTimeout(15_000);
+            conn.setConnectTimeout(15_000);
+            conn.setReadTimeout(40_000);
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("Accept-Charset", "UTF-8");
