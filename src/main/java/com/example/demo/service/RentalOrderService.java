@@ -510,6 +510,28 @@ public class RentalOrderService {
         return toResponse(o);
     }
 
+    /** Customer says the items are ready to go back. Admin still marks RETURNED after checking them. */
+    @Transactional
+    public OrderResponse requestReturn(String username, String orderId, String note) {
+        RentalOrderEntity o = lock(orderId);
+        if (!o.getUsername().equals(username))
+            throw new SuperAdminService.ResourceNotFoundException("Order not found: " + orderId);
+        if (o.getStatus() != OrderStatus.CONFIRMED)
+            throw new SuperAdminService.BadRequestException("Only confirmed orders can be returned (current: " + o.getStatus() + ").");
+        if (o.getFulfilmentStatus() == FulfilmentStatus.RETURNED || o.getFulfilmentStatus() == FulfilmentStatus.COMPLETED)
+            throw new SuperAdminService.BadRequestException("This order has already been returned.");
+        if (o.getFulfilmentStatus() != FulfilmentStatus.DELIVERED)
+            throw new SuperAdminService.BadRequestException("You can request a return only after the order is delivered (current: " + o.getFulfilmentStatus() + ").");
+        boolean already = eventRepo.findByOrderIdOrderByCreatedAtAsc(orderId).stream()
+                .anyMatch(e -> "RETURN_REQUESTED".equals(e.getEventType()));
+        if (already)
+            throw new SuperAdminService.BadRequestException("A return has already been requested for this order.");
+        String msg = "Return requested by customer" + (note == null || note.isBlank() ? "" : ": " + note.trim());
+        String f = o.getFulfilmentStatus().name();
+        event(o, "RETURN_REQUESTED", f, f, "USER:" + username, "USER", msg, true);
+        return toResponse(o);
+    }
+
     // ═══════════════════════════════════════════
     //  ADMIN: READ
     // ═══════════════════════════════════════════

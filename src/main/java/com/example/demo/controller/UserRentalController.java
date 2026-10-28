@@ -91,4 +91,14 @@ public class UserRentalController {
         return ResponseEntity.ok(ApiResponse.success("Booking cancelled",
                 service.cancel(username, orderId, body == null ? null : body.note()), 200));
     }
+
+    /** POST /api/v1/user/rentals/{orderId}/return-request  body (optional): { "note": "..." } */
+    @PostMapping("/{orderId}/return-request")
+    public ResponseEntity<ApiResponse<OrderResponse>> requestReturn(
+            @PathVariable String orderId, @RequestBody(required = false) NoteRequest body, HttpServletRequest http) {
+        String username = userAuth.requireUsername(http);
+        return ResponseEntity.ok(ApiResponse.success("Return requested",
+                service.requestReturn(username, orderId, body == null ? null : body.note()), 200));
+    }
+
 }

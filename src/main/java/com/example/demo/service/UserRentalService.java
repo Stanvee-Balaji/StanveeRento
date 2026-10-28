@@ -55,4 +55,6 @@ public class UserRentalService {
     public OrderDetailResponse myOrder(String username, String orderId) { return orders.myOrder(username, orderId); }
 
     public OrderResponse cancel(String username, String orderId, String reason) { return orders.cancelMine(username, orderId, reason); }
+
+    public OrderResponse requestReturn(String username, String orderId, String note) { return orders.requestReturn(username, orderId, note); }
 }
