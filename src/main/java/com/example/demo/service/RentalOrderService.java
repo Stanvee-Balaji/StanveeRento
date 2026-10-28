@@ -879,13 +879,6 @@ public class RentalOrderService {
             LocalDate expiry = q.sub.effectiveExpiry().toLocalDate();
             if (ir.startDate().isAfter(expiry)) c.violations.add("Rental starts after your subscription expires (" + expiry + "). Renew or extend first.");
             else if (ir.endDate().isAfter(expiry)) c.violations.add("Rental end date exceeds your subscription expiry (" + expiry + "). Renew or extend first.");
-//            Integer n = jdbc.queryForObject("select count(*) from product_plan_access where plan_id = ? and product_id = ?",
-//                    Integer.class, q.running.getPlanId(), p.getId());
-//            if (n == null || n == 0) c.violations.add("This product is not included in your plan (" + q.running.getPlanName() + ").");
-//        }
-//
-            
-            
             // No rows in product_plan_access for this product = available to ALL plans.
             Integer totalLinks = jdbc.queryForObject("select count(*) from product_plan_access where product_id = ?",
                     Integer.class, p.getId());
@@ -893,7 +886,8 @@ public class RentalOrderService {
                 Integer n = jdbc.queryForObject("select count(*) from product_plan_access where plan_id = ? and product_id = ?",
                         Integer.class, q.running.getPlanId(), p.getId());
                 if (n == null || n == 0) c.violations.add("This product is not included in your plan (" + q.running.getPlanName() + ").");
-            }
+            }}
+
         // pricing: offer price replaces the per-day price; weekend price (Sat/Sun) applies when set
         BigDecimal perDay = nz(p.getPerDayPrice());
         c.offer = p.getOfferPrice() != null && p.getOfferPrice().signum() > 0 && p.getOfferPrice().compareTo(perDay) < 0;
