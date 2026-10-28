@@ -238,11 +238,18 @@ public class RentalOrderService {
         RentalOrderEntity o = new RentalOrderEntity();
         o.setOrderId(newOrderId(now));
         o.setUsername(username);
-        o.setSubscriptionId(q.running.getId());
-        o.setSubscriptionOrderId(q.running.getOrderId());
-        o.setPlanId(q.running.getPlanId());
-        o.setPlanName(q.running.getPlanName());
-        o.setSubscriptionExpiry(q.sub.effectiveExpiry());
+//        o.setSubscriptionId(q.running.getId());
+//        o.setSubscriptionOrderId(q.running.getOrderId());
+//        o.setPlanId(q.running.getPlanId());
+//        o.setPlanName(q.running.getPlanName());
+//        o.setSubscriptionExpiry(q.sub.effectiveExpiry());
+        if (q.running != null && q.sub != null) {
+            o.setSubscriptionId(q.running.getId());
+            o.setSubscriptionOrderId(q.running.getOrderId());
+            o.setPlanId(q.running.getPlanId());
+            o.setPlanName(q.running.getPlanName());
+            o.setSubscriptionExpiry(q.sub.effectiveExpiry());
+        }
         o.setStatus(payReq ? OrderStatus.PAYMENT_PENDING : OrderStatus.CONFIRMED);
         o.setPaymentStatus(payReq ? PaymentStatus.PENDING : PaymentStatus.NOT_REQUIRED);
         o.setFulfilmentStatus(FulfilmentStatus.NOT_STARTED);
@@ -276,8 +283,10 @@ public class RentalOrderService {
         else {
             o.setPaidAt(null);
             o.setConfirmedAt(now);
-            o.setActivatedBy("SUBSCRIPTION");
-            o.setStatusReason("Covered by your subscription - no payment required");
+//            o.setActivatedBy("SUBSCRIPTION");
+//            o.setStatusReason("Covered by your subscription - no payment required");
+            o.setActivatedBy(q.sub != null ? "SUBSCRIPTION" : "SYSTEM");
+            o.setStatusReason(q.sub != null ? "Covered by your subscription - no payment required" : "No payment required");
         }
 
         List<RentalOrderItemEntity> savedItems = new ArrayList<>();
@@ -798,10 +807,10 @@ public class RentalOrderService {
 
         // delivery rules
         RentalBookingConfigEntity cfg = q.cfg;
-        if (!cfg.isDeliveryEnabled()) {
-            q.delivery = BigDecimal.ZERO; q.deliveryNote = "No delivery charge";
-        } else if (q.sub != null && cfg.isWaiveDeliveryForSubscribers()) {
+        if (q.sub != null) {
             q.delivery = BigDecimal.ZERO; q.deliveryNote = "Free delivery for subscribers";
+        } else if (!cfg.isDeliveryEnabled()) {
+            q.delivery = BigDecimal.ZERO; q.deliveryNote = "No delivery charge";
         } else if (cfg.getFreeDeliveryAbove() != null && q.rental.compareTo(cfg.getFreeDeliveryAbove()) >= 0) {
             q.delivery = BigDecimal.ZERO; q.deliveryNote = "Free delivery on rentals above " + cfg.getFreeDeliveryAbove();
         } else {
@@ -888,7 +897,7 @@ public class RentalOrderService {
                 .add(c.weekendRate.multiply(BigDecimal.valueOf(c.weekends))).multiply(BigDecimal.valueOf(ir.quantity())));
         c.discount = q.covers ? c.rentalValue : BigDecimal.ZERO;
         c.payable = money(c.rentalValue.subtract(c.discount));
-        c.depositPer = money(nz(p.getSecurityDeposit()));
+        c.depositPer = q.sub != null ? money(BigDecimal.ZERO) : money(nz(p.getSecurityDeposit()));
         c.depositTotal = money(c.depositPer.multiply(BigDecimal.valueOf(ir.quantity())));
         c.cover = imageRepository.findByProduct_Id(p.getId()).stream().findFirst().map(ProductImageEntity::getImageUrl).orElse(null);
 
@@ -1117,14 +1126,26 @@ public class RentalOrderService {
     /** Rule 22: everything that decided the price is frozen on the order. */
     private Map<String, Object> pricingSnapshot(Quote q) {
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put("subscriptionOrderId", q.sub.orderId());
-        m.put("planId", String.valueOf(q.sub.planId()));
-        m.put("planName", q.sub.planName());
-        m.put("subscriptionStart", String.valueOf(q.sub.startDate()));
-        m.put("subscriptionEnd", String.valueOf(q.sub.endDate()));
-        m.put("effectiveExpiry", String.valueOf(q.sub.effectiveExpiry()));
-        m.put("subscriptionDepositRequired", q.sub.planDepositRequired());
-        m.put("subscriptionDepositAmount", q.sub.planDepositAmount());
+//        m.put("subscriptionOrderId", q.sub.orderId());
+//        m.put("planId", String.valueOf(q.sub.planId()));
+//        m.put("planName", q.sub.planName());
+//        m.put("subscriptionStart", String.valueOf(q.sub.startDate()));
+//        m.put("subscriptionEnd", String.valueOf(q.sub.endDate()));
+//        m.put("effectiveExpiry", String.valueOf(q.sub.effectiveExpiry()));
+//        m.put("subscriptionDepositRequired", q.sub.planDepositRequired());
+//        m.put("subscriptionDepositAmount", q.sub.planDepositAmount());
+        if (q.sub != null) {
+            m.put("subscriptionOrderId", q.sub.orderId());
+            m.put("planId", String.valueOf(q.sub.planId()));
+            m.put("planName", q.sub.planName());
+            m.put("subscriptionStart", String.valueOf(q.sub.startDate()));
+            m.put("subscriptionEnd", String.valueOf(q.sub.endDate()));
+            m.put("effectiveExpiry", String.valueOf(q.sub.effectiveExpiry()));
+            m.put("subscriptionDepositRequired", q.sub.planDepositRequired());
+            m.put("subscriptionDepositAmount", q.sub.planDepositAmount());
+        } else {
+            m.put("subscription", "NONE");
+        }
         m.put("subscriptionCoversRental", q.covers);
         m.put("weekendDays", "SAT,SUN");
         m.put("deliveryFeeRule", q.cfg.getDeliveryFee());
