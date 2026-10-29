@@ -102,6 +102,13 @@ public class UserSubscriptionEntity {
 
     @PreUpdate
     protected void onUpdate() { updatedAt = LocalINDTime.now(); }
+    
+    
+    @Column(name = "deposit_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal depositAmount = BigDecimal.ZERO;
+
+    public BigDecimal getDepositAmount() { return depositAmount; }
+    public void setDepositAmount(BigDecimal v) { depositAmount = v; }
 
     public UUID getId() { return id; }
     public void setId(UUID v) { id = v; }

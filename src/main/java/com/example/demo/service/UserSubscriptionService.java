@@ -77,10 +77,13 @@ public class UserSubscriptionService {
                 nvl(req.getBuyerLastName()),
                 nvl(req.getBuyerAddress()),
 //                p.getPrice().setScale(2, RoundingMode.HALF_UP).toPlainString(),   // <- from DB snapshot
-                p.getPrice()
-                .add(plan.isDepositRequired() && plan.getDepositAmount() != null
-                        ? plan.getDepositAmount() : BigDecimal.ZERO)
-                .setScale(2, RoundingMode.HALF_UP).toPlainString(),   // price + deposit
+//                p.getPrice()
+//                .add(plan.isDepositRequired() && plan.getDepositAmount() != null
+//                        ? plan.getDepositAmount() : BigDecimal.ZERO)
+//                .setScale(2, RoundingMode.HALF_UP).toPlainString(),   // price + deposit
+                
+                p.getPrice().add(p.getDepositAmount() == null ? BigDecimal.ZERO : p.getDepositAmount())
+                .setScale(2, RoundingMode.HALF_UP).toPlainString(),   // price + deposit (from the DB snapshot)
                 nvl(req.getBuyerCity()),
                 nvl(req.getBuyerState()),
                 nvl(req.getBuyerPinCode()),

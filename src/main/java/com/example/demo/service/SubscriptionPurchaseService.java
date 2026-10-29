@@ -66,15 +66,19 @@ public class SubscriptionPurchaseService {
     private final AirpayIpnLogRepository ipnLogRepository;
     private final SuperAdminService superAdminService; // reused only for writeAudit(...)
     private final ObjectMapper mapper = new ObjectMapper();
+    private final DepositService depositService;
+ // add as the last constructor parameter and assign: this.depositService = depositService;
 
     public SubscriptionPurchaseService(UserSubscriptionRepository repo,
                                        TransactionService transactionService,
                                        AirpayIpnLogRepository ipnLogRepository,
-                                       SuperAdminService superAdminService) {
+                                       SuperAdminService superAdminService,
+                                       DepositService depositService) {
         this.repo = repo;
         this.transactionService = transactionService;
         this.ipnLogRepository = ipnLogRepository;
         this.superAdminService = superAdminService;
+        this.depositService=depositService;
     }
 
     // ═══════════════════════════════════════════
@@ -112,6 +116,10 @@ public class SubscriptionPurchaseService {
         p.setDurationValue(plan.getDurationValue());
         p.setDurationUnit(plan.getDurationUnit());
         p = repo.save(p);
+        
+      
+        p.setDepositAmount(plan.isDepositRequired() && plan.getDepositAmount() != null
+                ? plan.getDepositAmount() : BigDecimal.ZERO);          // <-- NEW
 
         if (isNew) {
             sysAudit(p.getOrderId(), AuditEventType.SUBSCRIPTION_EVENT, "USER:" + username,
@@ -170,6 +178,7 @@ public class SubscriptionPurchaseService {
             }
             activate(p, "AUTO", "Payment confirmed by Airpay IPN");
             p = repo.save(p);
+            depositService.recordReceived(p, new BigDecimal(ipnAmount.trim()));  
             sysAudit(orderId, AuditEventType.SUBSCRIPTION_EVENT, "SYSTEM",
                     json(Map.of("before", before, "after", state(p))), "[SUBSCRIPTION] ACTIVATED automatically");
             return;
@@ -303,6 +312,7 @@ public class SubscriptionPurchaseService {
         transactionService.markManualAdminConfirmed(txn, req.getApTransactionId(), actorName, req.getReason());
         activate(p, "ADMIN", "Manually confirmed by " + actorName + ": " + req.getReason());
         p = repo.save(p);
+        depositService.recordReceived(p, txn.getAmount());    
 
         adminAudit("MANUAL_CONFIRM", p, txn, before, state(p), req.getReason(), actorId, actorName, actorRole, ip);
         return toResponse(p);
