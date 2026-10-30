@@ -145,7 +145,8 @@ public class CryptoUtil {
             sb.append(value);
         }
 //        sb.append(new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-        sb.append(java.time.LocalDate.now(java.time.ZoneId.of("Asia/Kolkata")).toString());
+//        sb.append(java.time.LocalDate.now(java.time.ZoneId.of("Asia/Kolkata")).toString());
+        sb.append(com.example.demo.util.LocalINDTime.now().toLocalDate().toString());
 
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         return bytesToHex(md.digest(sb.toString().getBytes(StandardCharsets.UTF_8)));

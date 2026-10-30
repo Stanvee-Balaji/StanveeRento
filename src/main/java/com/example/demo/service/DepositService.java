@@ -65,7 +65,8 @@ public class DepositService {
         if (dep == null || dep.signum() <= 0) return;                       // plan had no deposit
         if (repo.findByOrderId(p.getOrderId()).isPresent()) return;         // duplicate IPN / confirm
 
-        LocalINDTimeHolder t = new LocalINDTimeHolder();
+//        LocalINDTimeHolder t = new LocalINDTimeHolder();
+        java.time.LocalDateTime now = LocalINDTime.now();
         DepositEntity d = new DepositEntity();
         d.setPurchaseId(p.getId());
         d.setOrderId(p.getOrderId());
@@ -75,8 +76,10 @@ public class DepositService {
         d.setDepositPaid(money(dep));
         d.setTotalPaid(money(totalPaid != null ? totalPaid : p.getPrice().add(dep)));
         d.setStatus(DepositStatus.HELD);
-        d.setCreatedAt(t.now);
-        d.setUpdatedAt(t.now);
+//        d.setCreatedAt(t.now);
+//        d.setUpdatedAt(t.now);
+        d.setCreatedAt(now);
+        d.setUpdatedAt(now);
         d = repo.save(d);
 
         addLedger(d, DepositTxnType.DEPOSIT_RECEIVED, d.getDepositPaid(), null,
@@ -334,5 +337,5 @@ public class DepositService {
     private static String truncate(String s, int max) { return s == null || s.length() <= max ? s : s.substring(0, max); }
 
     /** tiny helper so recordReceived uses one consistent timestamp */
-    private static final class LocalINDTimeHolder { final java.time.LocalDateTime now = LocalINDTime.now(); }
+//    private static final class LocalINDTimeHolder { final java.time.LocalDateTime now = LocalINDTime.now(); }
 }

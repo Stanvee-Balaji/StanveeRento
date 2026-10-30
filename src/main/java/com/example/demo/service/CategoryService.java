@@ -4,6 +4,7 @@ import com.example.demo.dto.CategoryDto;
 import com.example.demo.entity.CategoryEntity;
 import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.util.LocalINDTime;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -158,7 +159,8 @@ public class CategoryService {
 
         Map<String, Object> before = categoryState(category);
         category.setActive(false);
-        category.setDeletedAt(LocalDateTime.now());
+//        category.setDeletedAt(LocalDateTime.now());
+        category.setDeletedAt(LocalINDTime.now());
         categoryRepository.save(category);
 
         writeAudit(actorId, actorName, actorRole, "DELETE",

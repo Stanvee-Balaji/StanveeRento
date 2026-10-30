@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,7 +30,8 @@ public class RolePermissionEntity {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+//        createdAt = LocalDateTime.now();
+        createdAt = LocalINDTime.now();
     }
 
     public UUID getId() { return id; }

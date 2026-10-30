@@ -1,5 +1,6 @@
 package com.example.demo.entity;
-
+import com.example.demo.util.LocalINDTime;
+import jakarta.persistence.*;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -61,13 +62,16 @@ public class AddressEntity {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+//        createdAt = LocalDateTime.now();
+//        updatedAt = createdAt;
+        if (createdAt == null) createdAt = LocalINDTime.now();
         updatedAt = createdAt;
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+//        updatedAt = LocalDateTime.now();
+        updatedAt = LocalINDTime.now();
     }
 
     public UUID getId() { return id; }

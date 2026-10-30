@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.dto.CartDto;
 import com.example.demo.entity.*;
+//import com.example.demo.repository.*;
 import com.example.demo.repository.*;
+import com.example.demo.util.LocalINDTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -159,13 +161,15 @@ public class CartService {
     }
 
     private void touch(CartEntity cart) {
-        cart.setUpdatedAt(LocalDateTime.now());
+//        cart.setUpdatedAt(LocalDateTime.now());
+        cart.setUpdatedAt(LocalINDTime.now());
         cartRepository.save(cart);
     }
 
     /** Validates dates, product visibility, size and stock. Returns the product. */
     private ProductEntity validate(UUID productId, String size, LocalDate start, LocalDate end) {
-        LocalDate today = LocalDate.now(IST);
+//        LocalDate today = LocalDate.now(IST);
+        LocalDate today = LocalINDTime.now().toLocalDate();
         if (start.isBefore(today)) {
             throw new SuperAdminService.BadRequestException("startDate cannot be in the past");
         }

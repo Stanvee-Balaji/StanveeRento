@@ -1,8 +1,8 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 @Entity
 @Table(
@@ -13,8 +13,7 @@ import java.time.ZoneId;
 )
 public class StanveeUser {
 
-    // IST zone id, reused wherever we need "current India time"
-    private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,25 +37,27 @@ public class StanveeUser {
     private String passwordEnc;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now(IST);
+    private LocalDateTime createdAt = LocalINDTime.now();
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now(IST);
+    private LocalDateTime updatedAt = LocalINDTime.now();
 
     @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt = LocalDateTime.now(IST);
+    private LocalDateTime lastLoginAt = LocalINDTime.now();
 
     // ── lifecycle callbacks to keep timestamps accurate on persist/update ──
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now(IST);
+//        LocalDateTime now = LocalDateTime.now(IST);
+        LocalDateTime now = LocalINDTime.now();
         this.createdAt = now;
         this.updatedAt = now;
     }
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now(IST);
+//        this.updatedAt = LocalDateTime.now(IST);
+        this.updatedAt = LocalINDTime.now();
     }
 
     // ── getters/setters ──

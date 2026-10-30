@@ -170,7 +170,10 @@ public class TransactionService {
         entry.setEventType(type);
         entry.setActor(truncate(actor, 200));
         entry.setPayload(payload);
+//        entry.setRemarks(truncate(remarks, 1000));
         entry.setRemarks(truncate(remarks, 1000));
+        entry.setCreatedAt(LocalINDTime.now());
+        auditLogRepository.save(entry);
         auditLogRepository.save(entry);
     }
 

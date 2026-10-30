@@ -6,6 +6,7 @@ package com.example.demo.service;
 import com.example.demo.dto.RentalCalendarDto;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
+import com.example.demo.util.LocalINDTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -182,7 +183,8 @@ public class RentalCalendarService {
         Map<String, Object> before = blockState(block);
 
         block.setActive(false);
-        block.setReleasedAt(LocalDateTime.now());
+//        block.setReleasedAt(LocalDateTime.now());
+        block.setReleasedAt(LocalINDTime.now());
         block.setReleasedBy(actorId);
         block.setReleasedByType(actorType);
         block.setReleaseNotes(request == null ? null : request.getReleaseNotes());
@@ -280,10 +282,12 @@ public class RentalCalendarService {
         if (days < config.getMinRentalDays()) {
             violations.add("Minimum rental duration is " + config.getMinRentalDays() + " day(s), requested " + days);
         }
-        if (request.getStartDate().isAfter(LocalDate.now().plusDays(config.getAdvanceBookingDays()))) {
+//        if (request.getStartDate().isAfter(LocalDate.now().plusDays(config.getAdvanceBookingDays()))) {
+        if (request.getStartDate().isAfter(LocalINDTime.now().toLocalDate().plusDays(config.getAdvanceBookingDays()))) {
             violations.add("Bookings can only be made up to " + config.getAdvanceBookingDays() + " day(s) in advance");
         }
-        if (request.getStartDate().isBefore(LocalDate.now())) {
+//        if (request.getStartDate().isBefore(LocalDate.now())) {
+        if (request.getStartDate().isBefore(LocalINDTime.now().toLocalDate())) {
             violations.add("Start date cannot be in the past");
         }
 
@@ -422,7 +426,8 @@ public class RentalCalendarService {
     }
 
     private void syncInventoryFlag(InventoryEntity unit) {
-        LocalDate today = LocalDate.now();
+//        LocalDate today = LocalDate.now();
+        LocalDate today = LocalINDTime.now().toLocalDate();
         boolean blockedNow = blockRepository.findByInventory_IdAndActiveTrue(unit.getId()).stream()
                 .anyMatch(b -> !today.isBefore(b.getStartDate()) && !today.isAfter(b.getEndDate()));
         unit.setBlocked(blockedNow);

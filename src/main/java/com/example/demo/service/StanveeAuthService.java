@@ -6,6 +6,7 @@ import com.example.demo.entity.StanveeUser;
 import com.example.demo.repository.StanveeUserRepository;
 import com.example.demo.util.EncryptionUtil;
 import com.example.demo.util.JwtUtil;
+import com.example.demo.util.LocalINDTime;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -104,7 +105,8 @@ public class StanveeAuthService {
         StanveeUser user = userRepository.findByUsername(username).orElseGet(() -> {
             StanveeUser u = new StanveeUser();
             u.setUsername(username);
-            u.setCreatedAt(LocalDateTime.now(IST));
+//            u.setCreatedAt(LocalDateTime.now(IST));
+            u.setCreatedAt(LocalINDTime.now());
             return u;
         });
 
@@ -112,8 +114,12 @@ public class StanveeAuthService {
         user.setEmail(email);
         user.setMobileNo(mobileNo);
         user.setPasswordEnc(encryptionUtil.encrypt(plainPassword)); // encrypt before saving
-        user.setUpdatedAt(LocalDateTime.now(IST));
-        user.setLastLoginAt(LocalDateTime.now(IST));
+//        user.setUpdatedAt(LocalDateTime.now(IST));
+//        user.setLastLoginAt(LocalDateTime.now(IST));
+        
+        LocalDateTime now = LocalINDTime.now();
+        user.setUpdatedAt(now);
+        user.setLastLoginAt(now);
 
         userRepository.save(user);
     }

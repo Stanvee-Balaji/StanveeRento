@@ -1,5 +1,7 @@
 package com.example.demo.entity;
 
+//import jakarta.persistence.*;
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -41,14 +43,16 @@ public class PermissionEntity {
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalINDTime.now();
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+//        updatedAt = LocalDateTime.now();
+        updatedAt = LocalINDTime.now();
     }
 
     public UUID getId() { return id; }

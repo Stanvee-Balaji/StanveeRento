@@ -1,5 +1,8 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
+import jakarta.persistence.*;
+
 import com.example.demo.entity.DepositEntity.DeductionReason;
 import com.example.demo.entity.DepositEntity.DepositTxnType;
 import jakarta.persistence.*;
@@ -40,7 +43,13 @@ public class DepositLedgerEntity {
     @Column(name = "actor_role", length = 50) private String actorRole;
     @Column(name = "ip", length = 64) private String ip;
 
-    @Column(name = "created_at", nullable = false) private LocalDateTime createdAt;
+//    @Column(name = "created_at", nullable = false) private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false) private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) createdAt = LocalINDTime.now();
+    }
 
     public UUID getId() { return id; }
     public UUID getDepositId() { return depositId; }

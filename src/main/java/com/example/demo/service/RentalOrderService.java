@@ -1098,7 +1098,10 @@ public class RentalOrderService {
         e.setActor(actor);
         e.setActorRole(role);
         e.setMessage(truncate(msg, 500));
+//        e.setUserVisible(visible);
+//        eventRepo.save(e);
         e.setUserVisible(visible);
+        e.setCreatedAt(LocalINDTime.now());
         eventRepo.save(e);
     }
 

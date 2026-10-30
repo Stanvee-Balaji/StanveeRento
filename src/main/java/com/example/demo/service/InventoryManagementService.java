@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.InventoryDto;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
+import com.example.demo.util.LocalINDTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -312,7 +313,8 @@ public class InventoryManagementService {
 
     private Snapshot load() {
         Snapshot s = new Snapshot();
-        s.today = LocalDate.now();
+//        s.today = LocalDate.now();
+        s.today = LocalINDTime.now().toLocalDate();
 
         s.products = new LinkedHashMap<>();
         for (ProductEntity p : productRepository.findAll()) {
@@ -378,7 +380,8 @@ public class InventoryManagementService {
         }
 
         InventoryDto.SummaryResponse r = new InventoryDto.SummaryResponse();
-        r.setGeneratedAt(LocalDateTime.now());
+//        r.setGeneratedAt(LocalDateTime.now());
+        r.setGeneratedAt(LocalINDTime.now());
         r.setTotalProducts(s.products.size());
         r.setActiveProducts((int) s.products.values().stream().filter(ProductEntity::isActive).count());
         r.setVisibleProducts((int) s.products.values().stream().filter(ProductEntity::isVisible).count());

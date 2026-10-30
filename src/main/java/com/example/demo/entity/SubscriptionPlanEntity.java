@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -71,13 +72,15 @@ public class SubscriptionPlanEntity {
 
     @PrePersist
     void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        LocalDateTime now = LocalINDTime.now();
+        createdAt = now;
+        updatedAt = now;
     }
 
     @PreUpdate
     void onUpdate() {
-        updatedAt = LocalDateTime.now();
+//        updatedAt = LocalDateTime.now();
+        updatedAt = LocalINDTime.now();
     }
 
     // Getters / Setters

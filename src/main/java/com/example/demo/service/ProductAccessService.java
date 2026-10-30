@@ -6,7 +6,9 @@ import com.example.demo.entity.ProductPlanAccessEntity;
 import com.example.demo.entity.SubscriptionPlanEntity;
 import com.example.demo.repository.ProductPlanAccessRepository;
 import com.example.demo.repository.ProductRepository;
+//import com.example.demo.repository.SubscriptionPlanRepository;
 import com.example.demo.repository.SubscriptionPlanRepository;
+import com.example.demo.util.LocalINDTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -157,7 +159,8 @@ public class ProductAccessService {
 
     /** Plan ids of the user's ACTIVE subscriptions that are still valid now and on the rental end date. */
     private Set<UUID> activePlanIds(String username, LocalDate rentalEndDate) {
-        LocalDateTime cutoff = LocalDateTime.now();
+//        LocalDateTime cutoff = LocalDateTime.now();
+        LocalDateTime cutoff = LocalINDTime.now();
         if (rentalEndDate != null && rentalEndDate.atStartOfDay().isAfter(cutoff)) {
             cutoff = rentalEndDate.atStartOfDay();
         }

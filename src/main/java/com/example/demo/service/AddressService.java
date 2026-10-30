@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.dto.AddressDto;
 import com.example.demo.entity.AddressEntity;
+//import com.example.demo.repository.AddressRepository;
 import com.example.demo.repository.AddressRepository;
+import com.example.demo.util.LocalINDTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,9 +61,14 @@ public class AddressService {
         }
 
         AddressEntity a = new AddressEntity();
+//        a.setUsername(username);
+//        apply(a, req);
+//        a.setDefaultAddress(makeDefault);
         a.setUsername(username);
         apply(a, req);
         a.setDefaultAddress(makeDefault);
+        a.setCreatedAt(LocalINDTime.now());
+        a.setUpdatedAt(LocalINDTime.now());
         return toResponse(addressRepository.save(a));
     }
 
@@ -119,8 +126,11 @@ public class AddressService {
                 .orElseThrow(() -> new SuperAdminService.ResourceNotFoundException(
                         "Address not found: " + addressId));
     }
-
+//
+//    private void apply(AddressEntity a, AddressDto.AddressRequest r) {
+    
     private void apply(AddressEntity a, AddressDto.AddressRequest r) {
+        a.setUpdatedAt(LocalINDTime.now());
         a.setLabel(r.getLabel().trim().toUpperCase());
         a.setFullName(r.getFullName().trim());
         a.setPhone(r.getPhone().trim());

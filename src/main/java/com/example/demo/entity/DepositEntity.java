@@ -1,5 +1,8 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
+import jakarta.persistence.*;
+
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,8 +37,21 @@ public class DepositEntity {
     @Column(name = "created_at", nullable = false) private LocalDateTime createdAt;
     @Column(name = "updated_at", nullable = false) private LocalDateTime updatedAt;
 
+//    @Version private Long version;
+
     @Version private Long version;
 
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalINDTime.now();
+        if (createdAt == null) createdAt = now;
+        if (updatedAt == null) updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalINDTime.now();
+    }
     public BigDecimal balance() { return depositPaid.subtract(deductedTotal).subtract(refundedTotal); }
 
     public UUID getId() { return id; }

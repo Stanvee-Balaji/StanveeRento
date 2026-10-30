@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -25,7 +26,9 @@ public class ProductPlanAccessEntity {
 
     @PrePersist
     void prePersist() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
+//        if (createdAt == null) createdAt = LocalDateTime.now();
+    	
+        if (createdAt == null) createdAt = LocalINDTime.now();
     }
 
     public UUID getId() { return id; }

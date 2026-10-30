@@ -1,7 +1,7 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,7 +29,7 @@ public class WishlistItemEntity {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        if (createdAt == null) createdAt = LocalINDTime.now();
     }
 
     public UUID getId() { return id; }

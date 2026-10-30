@@ -41,7 +41,8 @@ public class JwtUtil {
     }
 
     private String generate(UUID userId, String roleType, String email, String tokenType, long expiry) {
-        Date now = new Date();
+//        Date now = new Date();
+        Date now = LocalINDTime.nowDate();
         Date expires = new Date(now.getTime() + expiry);
 
         return Jwts.builder()
@@ -109,9 +110,11 @@ public class JwtUtil {
     private static final Base64.Decoder DEC = Base64.getUrlDecoder();
 
     public String generateToken(String username) {
-        long now = System.currentTimeMillis();
-        long exp = now + EXPIRY_MILLIS;
+//        long now = System.currentTimeMillis();
+//        long exp = now + EXPIRY_MILLIS;
 
+        long now = LocalINDTime.nowMillis();
+        long exp = now + EXPIRY_MILLIS;
         String header = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
         String payload = "{\"sub\":\"" + escape(username) + "\",\"iat\":" + now + ",\"exp\":" + exp + "}";
 
@@ -143,7 +146,7 @@ public class JwtUtil {
         String payloadJson = new String(DEC.decode(parts[1]), StandardCharsets.UTF_8);
 
         Long exp = extractLongField(payloadJson, "exp");
-        if (exp == null || System.currentTimeMillis() > exp) {
+        if (exp == null || LocalINDTime.nowMillis() > exp) {
             return null; // expired
         }
 

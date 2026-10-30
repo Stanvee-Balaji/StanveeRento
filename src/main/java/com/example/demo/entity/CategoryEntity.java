@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.example.demo.util.LocalINDTime;
+import jakarta.persistence.*;
 @Entity
 @Table(name = "categories")
 public class CategoryEntity {
@@ -31,12 +33,14 @@ public class CategoryEntity {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+//        createdAt = LocalDateTime.now();
+        if (createdAt == null) createdAt = LocalINDTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+//        updatedAt = LocalDateTime.now();
+        updatedAt = LocalINDTime.now();
     }
 
     // ── getters / setters ──

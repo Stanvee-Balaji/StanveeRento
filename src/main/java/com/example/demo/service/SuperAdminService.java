@@ -85,7 +85,8 @@ public class SuperAdminService {
             throw new UnauthorizedException("Invalid email or password");
         }
 
-        admin.setLastLoginAt(LocalDateTime.now());
+//        admin.setLastLoginAt(LocalDateTime.now());
+        admin.setLastLoginAt(LocalINDTime.now());
         admin.setLastLoginIp(ip);
         superAdminRepository.save(admin);
 
@@ -236,10 +237,15 @@ public class SuperAdminService {
         log.setTargetLabel(target);
         log.setBeforeState(toJsonNode(before));
         log.setAfterState(toJsonNode(after));
+//        log.setIpAddress(ip);
+//
+//        auditLogRepository.save(log);
+        
         log.setIpAddress(ip);
+        
 
-        auditLogRepository.save(log);
-    }
+        auditLogRepository.save(log);}
+//    }
 
     // ═══════════════════════════════════════════
     //  ROLE
@@ -348,7 +354,8 @@ public class SuperAdminService {
         rolePermissionRepository.deleteByRole_Id(role.getId());
 
         role.setActive(false);
-        role.setDeletedAt(LocalDateTime.now());
+//        role.setDeletedAt(LocalDateTime.now());
+        role.setDeletedAt(LocalINDTime.now());
         roleRepository.save(role);
 
         writeAudit(actorId, actor.getFullName(), "SUPER_ADMIN",
@@ -493,7 +500,8 @@ public class SuperAdminService {
         }
 
         module.setActive(false);
-        module.setDeletedAt(LocalDateTime.now());
+//        module.setDeletedAt(LocalDateTime.now());
+        module.setDeletedAt(LocalINDTime.now());
         moduleRepository.save(module);
 
         writeAudit(actorId, actor.getFullName(), "SUPER_ADMIN",
@@ -611,7 +619,8 @@ public class SuperAdminService {
         rolePermissionRepository.deleteByPermission_Id(id);
 
         permission.setActive(false);
-        permission.setDeletedAt(LocalDateTime.now());
+//        permission.setDeletedAt(LocalDateTime.now());
+        permission.setDeletedAt(LocalINDTime.now());
         permissionRepository.save(permission);
 
         writeAudit(actorId, actor.getFullName(), "SUPER_ADMIN",

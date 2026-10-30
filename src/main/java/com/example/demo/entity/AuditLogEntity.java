@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.example.demo.util.LocalINDTime;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "audit_logs")
@@ -48,7 +50,8 @@ public class AuditLogEntity {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+//        createdAt = LocalDateTime.now();
+        createdAt = LocalINDTime.now();
     }
 
     public UUID getId() {

@@ -4,6 +4,7 @@ import com.example.demo.dto.AdminDto;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
 import com.example.demo.util.JwtUtil;
+import com.example.demo.util.LocalINDTime;
 import com.example.demo.util.PasswordUtil;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -57,7 +58,8 @@ public class AdminService {
             throw new SuperAdminService.UnauthorizedException("Invalid email or password");
         }
 
-        admin.setLastLoginAt(LocalDateTime.now());
+//        admin.setLastLoginAt(LocalDateTime.now());
+        admin.setLastLoginAt(LocalINDTime.now());
         admin.setLastLoginIp(ip);
         admin = adminRepository.save(admin);
 
@@ -199,7 +201,8 @@ public class AdminService {
         Map<String, Object> before = safeState(admin);
 
         admin.setActive(false);
-        admin.setDeletedAt(LocalDateTime.now());
+//        admin.setDeletedAt(LocalDateTime.now());
+        admin.setDeletedAt(LocalINDTime.now());
         adminRepository.save(admin);
 
         superAdminService.writeAudit(actorId, actor.getFullName(), "SUPER_ADMIN",

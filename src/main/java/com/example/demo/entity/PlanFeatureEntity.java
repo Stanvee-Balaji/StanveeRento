@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -26,7 +27,9 @@ public class PlanFeatureEntity {
     private LocalDateTime createdAt;
 
     @PrePersist
-    void onCreate() { createdAt = LocalDateTime.now(); }
+    void onCreate() { createdAt = LocalINDTime.now(); }
+//    void onCreate() { createdAt = LocalDateTime.now(); }
+    
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }

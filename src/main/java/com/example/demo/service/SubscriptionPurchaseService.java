@@ -109,6 +109,9 @@ public class SubscriptionPurchaseService {
             p.setStatus(Status.PENDING_PAYMENT);
         }
         // the snapshot is always re-read from the DB plan, never from the request
+//        p.setPlanId(plan.getId());
+//        p.setPlanName(plan.getPlanName());
+        p.setCreatedAt(now);
         p.setPlanId(plan.getId());
         p.setPlanName(plan.getPlanName());
         p.setPrice(plan.getPrice());

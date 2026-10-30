@@ -3,7 +3,9 @@ package com.example.demo.service;
 import com.example.demo.config.AirpayConfig;
 import com.example.demo.entity.AuditEventType;
 import com.example.demo.entity.Transaction;
+//import com.example.demo.entity.TransactionStatus;
 import com.example.demo.entity.TransactionStatus;
+import org.springframework.context.annotation.Lazy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -33,17 +35,32 @@ public class AirpayService {
     private final CryptoUtil crypto;
     private final HttpUtil http;
     private final TransactionService transactionService;
+//    private final SubscriptionPurchaseService purchaseService;
+//    private final ObjectMapper mapper = new ObjectMapper();
+    
     private final SubscriptionPurchaseService purchaseService;
+    private final RentalOrderService rentalOrderService;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public AirpayService(AirpayConfig config, CryptoUtil crypto, HttpUtil http,
                          TransactionService transactionService,
-                         SubscriptionPurchaseService purchaseService) {
+                         SubscriptionPurchaseService purchaseService,
+                         @Lazy RentalOrderService rentalOrderService) {
         this.config = config;
         this.crypto = crypto;
         this.http = http;
         this.transactionService = transactionService;
         this.purchaseService = purchaseService;
+        this.rentalOrderService = rentalOrderService;
+    }
+
+    private void routeResult(String orderId, TransactionStatus status, String hashStatus,
+                             String amount, String message) {
+        if (orderId.startsWith(RentalOrderService.ORDER_PREFIX)) {
+            rentalOrderService.onPaymentResolved(orderId, status, hashStatus, amount, message);
+        } else {
+            purchaseService.onPaymentResolved(orderId, status, hashStatus, amount, message);
+        }
     }
 
     // =========================================================================
@@ -233,7 +250,8 @@ public class AirpayService {
                     hashStatus, TransactionStatus.HASH_MISMATCH);
             transactionService.logAudit(orderId, txn, AuditEventType.ERROR, "SYSTEM", null,
                     "IPN secure hash mismatch");
-            purchaseService.onPaymentResolved(orderId, TransactionStatus.HASH_MISMATCH, hashStatus, amount, message);
+//            purchaseService.onPaymentResolved(orderId, TransactionStatus.HASH_MISMATCH, hashStatus, amount, message);
+            routeResult(orderId, TransactionStatus.HASH_MISMATCH, hashStatus, amount, message);
             return;
         }
 
@@ -245,7 +263,8 @@ public class AirpayService {
                 "IPN resolvedStatus=" + resolved + " secureHashStatus=" + hashStatus);
 
         // THE GATE: the subscription is activated here, and only here (or by an admin override).
-        purchaseService.onPaymentResolved(orderId, resolved, hashStatus, amount, message);
+//        purchaseService.onPaymentResolved(orderId, resolved, hashStatus, amount, message);
+        routeResult(orderId, resolved, hashStatus, amount, message);
     }
 
     /** ap_securehash = CRC32(orderid:ap_transactionid:amount:transaction_status:message:mercid:username[:customer_vpa]) */

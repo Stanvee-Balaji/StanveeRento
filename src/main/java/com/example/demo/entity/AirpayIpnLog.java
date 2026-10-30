@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-
+import com.example.demo.util.LocalINDTime;
+import jakarta.persistence.*;
 /**
  * Stores the raw IPN (Instant Payment Notification) JSON
  * that AirPay POSTs directly to /api/payment/ipn after every payment.
@@ -102,6 +103,11 @@ public class AirpayIpnLog {
     private LocalDateTime receivedAt;
 
     public AirpayIpnLog() {}
+
+    @PrePersist
+    protected void onCreate() {
+        if (receivedAt == null) receivedAt = LocalINDTime.now();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

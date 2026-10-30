@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.example.demo.dto.ProductDto;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
+import com.example.demo.util.LocalINDTime;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -221,7 +222,8 @@ public class ProductService {
         product.setFeaturedPriority(null);
         product.setNewArrival(false);
         product.setNewArrivalPriority(null);
-        product.setDeletedAt(LocalDateTime.now());
+//        product.setDeletedAt(LocalDateTime.now());
+        product.setDeletedAt(LocalINDTime.now());
         product.setUpdatedBy(actorId);
         productRepository.save(product);
 

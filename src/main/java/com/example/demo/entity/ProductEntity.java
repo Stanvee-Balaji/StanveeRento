@@ -1,7 +1,7 @@
 package com.example.demo.entity;
 
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -103,12 +103,14 @@ public class ProductEntity {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+//        createdAt = LocalDateTime.now();
+        if (createdAt == null) createdAt = LocalINDTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+//        updatedAt = LocalDateTime.now();
+        updatedAt = LocalINDTime.now();
     }
 
     // ── getters / setters ──

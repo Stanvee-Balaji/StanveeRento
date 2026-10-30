@@ -1,5 +1,6 @@
 package com.example.demo.entity;
-
+import com.example.demo.util.LocalINDTime;
+import jakarta.persistence.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -46,14 +47,16 @@ public class CalendarConfigEntity {
 
     @PrePersist
     void prePersist() {
-        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalINDTime.now();
         this.createdAt = now;
         this.updatedAt = now;
     }
 
     @PreUpdate
     void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalINDTime.now();
     }
 
     public UUID getId() { return id; }

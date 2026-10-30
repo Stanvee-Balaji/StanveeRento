@@ -1,5 +1,8 @@
 package com.example.demo.entity;
 
+//import jakarta.persistence.*;
+
+import com.example.demo.util.LocalINDTime;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,14 +65,16 @@ public class InventoryBlockEntity {
 
     @PrePersist
     void prePersist() {
-        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalINDTime.now();
         this.createdAt = now;
         this.updatedAt = now;
     }
 
     @PreUpdate
     void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalINDTime.now();
     }
 
     // ── Getters / Setters ──────────────────────────────────────────────

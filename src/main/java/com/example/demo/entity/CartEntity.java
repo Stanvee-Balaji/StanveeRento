@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
+import com.example.demo.util.LocalINDTime;
+import jakarta.persistence.*;
 @Entity
 @Table(name = "carts")
 public class CartEntity {
@@ -30,14 +31,19 @@ public class CartEntity {
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        createdAt = now;
+//        LocalDateTime now = LocalDateTime.now();
+//        createdAt = now;
+//        updatedAt = now;
+    	
+        LocalDateTime now = LocalINDTime.now();
+        if (createdAt == null) createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+//        updatedAt = LocalDateTime.now();
+        updatedAt = LocalINDTime.now();
     }
 
     public UUID getId() { return id; }

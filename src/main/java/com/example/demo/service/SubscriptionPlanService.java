@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.SubscriptionPlanDto;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
+import com.example.demo.util.LocalINDTime;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -224,7 +225,8 @@ public class SubscriptionPlanService {
 
         plan.setActive(false);
         plan.setStatus("ARCHIVED");
-        plan.setDeletedAt(LocalDateTime.now());
+//        plan.setDeletedAt(LocalDateTime.now());
+        plan.setDeletedAt(LocalINDTime.now());
         plan.setUpdatedBy(actorId);
         planRepository.save(plan);
 
