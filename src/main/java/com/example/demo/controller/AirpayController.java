@@ -1,4 +1,5 @@
 package com.example.demo.controller;
+import com.example.demo.util.LocalINDTime;
 
 import com.example.demo.entity.AirpayIpnLog;
 import com.example.demo.repository.AirpayIpnLogRepository;
@@ -113,6 +114,7 @@ public class AirpayController {
         l.setTransactionTime(str(d, "transaction_time"));
         l.setRawPayload(objectMapper.writeValueAsString(d));
         l.setSourceIp(sourceIp);
+        l.setReceivedAt(LocalINDTime.now());
         return l;
     }
 
