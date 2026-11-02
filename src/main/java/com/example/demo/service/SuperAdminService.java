@@ -230,7 +230,9 @@ public class SuperAdminService {
         AuditLogEntity log = new AuditLogEntity();
         log.setAdminId(actorId);
         log.setAdminName(actorName);
-        log.setAdminType("SUPER_ADMIN");
+//        log.setAdminType("SUPER_ADMIN");
+//        log.setAdminRole(actorRole);    
+        log.setAdminType("SUPER_ADMIN".equalsIgnoreCase(actorRole) ? "SUPER_ADMIN" : "SUB_ADMIN");
         log.setAdminRole(actorRole);
         log.setAction(action);
         log.setModule(module);
