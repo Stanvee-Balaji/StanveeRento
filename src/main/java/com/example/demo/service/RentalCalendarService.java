@@ -49,7 +49,25 @@ public class RentalCalendarService {
     private final InventoryRepository inventoryRepository;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+//    private final SuperAdminService superAdminService; // reused only for writeAudit(...)
+//
+//    public RentalCalendarService(
+//            InventoryBlockRepository blockRepository,
+//            CalendarConfigRepository configRepository,
+//            InventoryRepository inventoryRepository,
+//            ProductRepository productRepository,
+//            CategoryRepository categoryRepository,
+//            SuperAdminService superAdminService) {
+//        this.blockRepository = blockRepository;
+//        this.configRepository = configRepository;
+//        this.inventoryRepository = inventoryRepository;
+//        this.productRepository = productRepository;
+//        this.categoryRepository = categoryRepository;
+//        this.superAdminService = superAdminService;
+//    }
+
     private final SuperAdminService superAdminService; // reused only for writeAudit(...)
+    private final RentalOrderUnitRepository rentalOrderUnitRepository;
 
     public RentalCalendarService(
             InventoryBlockRepository blockRepository,
@@ -57,15 +75,11 @@ public class RentalCalendarService {
             InventoryRepository inventoryRepository,
             ProductRepository productRepository,
             CategoryRepository categoryRepository,
-            SuperAdminService superAdminService) {
+            SuperAdminService superAdminService,
+            RentalOrderUnitRepository rentalOrderUnitRepository) {
+        this.rentalOrderUnitRepository = rentalOrderUnitRepository;
         this.blockRepository = blockRepository;
-        this.configRepository = configRepository;
-        this.inventoryRepository = inventoryRepository;
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
-        this.superAdminService = superAdminService;
-    }
-
+    
     // ═══════════════════════════════════════════
     //  BLOCK
     // ═══════════════════════════════════════════
@@ -85,8 +99,16 @@ public class RentalCalendarService {
                                 "Inventory unit not found: " + id)))
                 .toList();
 
+//        List<InventoryBlockEntity> created = new ArrayList<>();
+//        for (InventoryEntity unit : units) {
+//            assertNoOverlap(unit.getId(), request.getStartDate(), request.getEndDate());
         List<InventoryBlockEntity> created = new ArrayList<>();
         for (InventoryEntity unit : units) {
+            List<UUID> busy = getOccupiedInventoryIds(unit.getProduct().getId(),
+                    request.getStartDate(), request.getEndDate());
+            if (busy.contains(unit.getId()))
+                throw new SuperAdminService.BadRequestException(
+                        "Unit " + unit.getSku() + " is booked by a customer order in that range");
             assertNoOverlap(unit.getId(), request.getStartDate(), request.getEndDate());
             created.add(saveBlock(unit, request.getBlockType(), request.getStartDate(),
                     request.getEndDate(), request.getNotes(), actorId, actorType));
@@ -120,9 +142,21 @@ public class RentalCalendarService {
         List<InventoryEntity> allUnits = inventoryRepository.findByProduct_Id(product.getId());
         List<UUID> occupiedIds = getOccupiedInventoryIds(product.getId(), request.getStartDate(), request.getEndDate());
 
+//        List<InventoryEntity> available = allUnits.stream()
+//                .filter(InventoryEntity::isActive)
+//                .filter(u -> !occupiedIds.contains(u.getId()))
+//                .toList();
+        
+        
+        Set<UUID> alreadyBlocked = blockRepository
+                .findByProduct_IdAndActiveTrueAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        product.getId(), request.getEndDate(), request.getStartDate())
+                .stream().map(b -> b.getInventory().getId()).collect(Collectors.toSet());
+
         List<InventoryEntity> available = allUnits.stream()
                 .filter(InventoryEntity::isActive)
                 .filter(u -> !occupiedIds.contains(u.getId()))
+                .filter(u -> !alreadyBlocked.contains(u.getId()))
                 .toList();
 
         if (available.size() < request.getQuantity()) {
@@ -235,23 +269,50 @@ public class RentalCalendarService {
                 .findByProduct_IdAndActiveTrueAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                         productId, to, from);
 
+//        List<RentalCalendarDto.DayAvailability> days = new ArrayList<>();
+//        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
+//            final LocalDate day = d;
+//            long blockedCount = overlapping.stream()
+//                    .filter(b -> !day.isBefore(b.getStartDate()) && !day.isAfter(b.getEndDate()))
+//                    .map(b -> b.getInventory().getId())
+//                    .distinct()
+//                    .count();
+//
+//            int bookedCount = getOccupiedInventoryIds(productId, day, day).size();
+//
+//            RentalCalendarDto.DayAvailability da = new RentalCalendarDto.DayAvailability();
+//            da.setDate(day);
+//            da.setTotalUnits(totalActive);
+//            da.setBlockedUnits((int) blockedCount);
+//            da.setBookedUnits(bookedCount);
+//            da.setAvailableUnits(Math.max(0, totalActive - (int) blockedCount - bookedCount));
+//            days.add(da);
+//        }
+        
+        
+        List<RentalOrderUnitEntity> held =
+                rentalOrderUnitRepository.findActiveOverlapping(productId, from, to);
+
         List<RentalCalendarDto.DayAvailability> days = new ArrayList<>();
         for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
             final LocalDate day = d;
-            long blockedCount = overlapping.stream()
+            Set<UUID> blockedIds = overlapping.stream()
                     .filter(b -> !day.isBefore(b.getStartDate()) && !day.isAfter(b.getEndDate()))
                     .map(b -> b.getInventory().getId())
-                    .distinct()
-                    .count();
-
-            int bookedCount = getOccupiedInventoryIds(productId, day, day).size();
+                    .collect(Collectors.toSet());
+            Set<UUID> bookedIds = held.stream()
+                    .filter(h -> !day.isBefore(h.getStartDate()) && !day.isAfter(h.getBlockedUntil()))
+                    .map(RentalOrderUnitEntity::getInventoryId)
+                    .collect(Collectors.toSet());
+            Set<UUID> unavailable = new HashSet<>(blockedIds);
+            unavailable.addAll(bookedIds);
 
             RentalCalendarDto.DayAvailability da = new RentalCalendarDto.DayAvailability();
             da.setDate(day);
             da.setTotalUnits(totalActive);
-            da.setBlockedUnits((int) blockedCount);
-            da.setBookedUnits(bookedCount);
-            da.setAvailableUnits(Math.max(0, totalActive - (int) blockedCount - bookedCount));
+            da.setBlockedUnits(blockedIds.size());
+            da.setBookedUnits(bookedIds.size());
+            da.setAvailableUnits(Math.max(0, totalActive - unavailable.size()));
             days.add(da);
         }
 
@@ -440,8 +501,13 @@ public class RentalCalendarService {
      * empty until a bookings/orders table is wired in — see the class
      * Javadoc and the SQL migration NOTE.
      */
+//    private List<UUID> getOccupiedInventoryIds(UUID productId, LocalDate from, LocalDate to) {
+//        return List.of();
+//    }
+    
     private List<UUID> getOccupiedInventoryIds(UUID productId, LocalDate from, LocalDate to) {
-        return List.of();
+        return new ArrayList<>(new HashSet<>(
+                rentalOrderUnitRepository.findOccupiedInventoryIds(productId, from, to)));
     }
 
     private void validateBlockType(String blockType) {

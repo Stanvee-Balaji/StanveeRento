@@ -5,6 +5,8 @@ import com.example.demo.entity.*;
 import com.example.demo.repository.*;
 import com.example.demo.util.LocalINDTime;
 import org.springframework.stereotype.Service;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
@@ -55,13 +57,16 @@ public class InventoryManagementService {
     private final InventoryBlockRepository blockRepository;
     private final ProductImageRepository imageRepository;
     private final SuperAdminService superAdminService; // reused only for writeAudit(...)
+    private final JdbcTemplate jdbc;
 
     public InventoryManagementService(
             ProductRepository productRepository,
             InventoryRepository inventoryRepository,
             InventoryBlockRepository blockRepository,
             ProductImageRepository imageRepository,
-            SuperAdminService superAdminService) {
+            SuperAdminService superAdminService,
+            JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
         this.productRepository = productRepository;
         this.inventoryRepository = inventoryRepository;
         this.blockRepository = blockRepository;
@@ -284,7 +289,10 @@ public class InventoryManagementService {
         LocalDate today;
         Map<UUID, ProductEntity> products;                 // non-deleted products only
         List<InventoryEntity> units;                       // units of those products
+//        Map<UUID, List<InventoryBlockEntity>> blocks;      // ACTIVE blocks by inventoryId
+        
         Map<UUID, List<InventoryBlockEntity>> blocks;      // ACTIVE blocks by inventoryId
+        Set<UUID> rentedNow = new HashSet<>();             // units in a CONFIRMED order covering today
 
         InventoryBlockEntity current(UUID inventoryId) {
             return blocks.getOrDefault(inventoryId, List.of()).stream()
@@ -303,7 +311,8 @@ public class InventoryManagementService {
         String state(InventoryEntity i) {
             if (!i.isActive()) return "INACTIVE";
             String st = i.getStatus() == null ? "" : i.getStatus().trim().toUpperCase();
-            if ("RENTED".equals(st)) return "RENTED";
+//            if ("RENTED".equals(st)) return "RENTED";
+            if ("RENTED".equals(st) || rentedNow.contains(i.getId())) return "RENTED";
             if ("DAMAGED".equals(st)) return "DAMAGED";
             if (current(i.getId()) != null) return "BLOCKED";
             if ("CLEANING".equals(st)) return "CLEANING";
@@ -328,8 +337,20 @@ public class InventoryManagementService {
         s.blocks = new HashMap<>();
         for (InventoryBlockEntity b : blockRepository.findAll()) {
             if (!b.isActive() || b.getInventory() == null) continue;
+//            s.blocks.computeIfAbsent(b.getInventory().getId(), k -> new ArrayList<>()).add(b);
+//        }
+//        return s;
+            
             s.blocks.computeIfAbsent(b.getInventory().getId(), k -> new ArrayList<>()).add(b);
         }
+
+        s.rentedNow.addAll(jdbc.query(
+                "select u.inventory_id from rental_order_units u "
+                        + "join rental_orders o on o.id = u.order_pk "
+                        + "where u.is_active = true and o.status = 'CONFIRMED' "
+                        + "and ? between u.start_date and u.end_date",
+                (rs, i) -> rs.getObject(1, UUID.class),
+                java.sql.Date.valueOf(s.today)));
         return s;
     }
 
