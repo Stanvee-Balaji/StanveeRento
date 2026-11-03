@@ -68,6 +68,9 @@ public class RentalCalendarService {
 
     private final SuperAdminService superAdminService; // reused only for writeAudit(...)
     private final RentalOrderUnitRepository rentalOrderUnitRepository;
+    
+    
+
 
     public RentalCalendarService(
             InventoryBlockRepository blockRepository,
@@ -79,6 +82,26 @@ public class RentalCalendarService {
             RentalOrderUnitRepository rentalOrderUnitRepository) {
         this.rentalOrderUnitRepository = rentalOrderUnitRepository;
         this.blockRepository = blockRepository;
+this.configRepository = configRepository;
+this.inventoryRepository = inventoryRepository;
+this.productRepository = productRepository;
+this.categoryRepository = categoryRepository;
+this.superAdminService = superAdminService;
+}
+
+//    public RentalCalendarService(
+//            InventoryBlockRepository blockRepository,
+//            CalendarConfigRepository configRepository,
+//            InventoryRepository inventoryRepository,
+//            ProductRepository productRepository,
+//            CategoryRepository categoryRepository,
+//            SuperAdminService superAdminService,
+//            RentalOrderUnitRepository rentalOrderUnitRepository) {
+//        this.rentalOrderUnitRepository = rentalOrderUnitRepository;
+//        this.blockRepository = blockRepository;
+//    
+    
+    
     
     // ═══════════════════════════════════════════
     //  BLOCK
